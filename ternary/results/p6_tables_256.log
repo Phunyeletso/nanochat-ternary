@@ -1,5 +1,5 @@
 2026-10-21 16:59:18,822 - nanochat.common - [32m[1mINFO[0m - Distributed world size: 1
-args: {"tag": "p6_tables_256", "out_dir": "/home/claude/runs/p6", "depth": 4, "aspect_ratio": 64, "head_dim": 64, "max_seq_len": 256, "window_pattern": "L", "ternary_linear": 1, "ternary_embed": 1, "ternary_value_embeds": 1, "ternary_lm_head": 0, "ternary_gates": 0, "ternary_all": 0, "quant_act": 1, "flip_rule": "stochastic", "flip_frac": 0.001, "flip_lr": 0.001, "flip_schedule": "cosine", "flip_floor": 0.1, "counter_threshold": 8, "seed": 0, "bitnet": 0, "ternary_scale_lr": 0.002, "num_iterations": 600, "device_batch_size": 32, "total_batch_size": 8192, "embedding_lr": 0.3, "unembedding_lr": 0.008, "weight_decay": 0.28, "matrix_lr": 0.02, "scalar_lr": 0.5, "warmup_steps": 40, "warmdown_ratio": 0.65, "final_lr_frac": 0.05, "target_param_data_ratio": 12, "eval_every": 50, "eval_tokens": 131072, "compile": 0, "save": 1}
+args: {"tag": "p6_tables_256", "out_dir": "runs/p6", "depth": 4, "aspect_ratio": 64, "head_dim": 64, "max_seq_len": 256, "window_pattern": "L", "ternary_linear": 1, "ternary_embed": 1, "ternary_value_embeds": 1, "ternary_lm_head": 0, "ternary_gates": 0, "ternary_all": 0, "quant_act": 1, "flip_rule": "stochastic", "flip_frac": 0.001, "flip_lr": 0.001, "flip_schedule": "cosine", "flip_floor": 0.1, "counter_threshold": 8, "seed": 0, "bitnet": 0, "ternary_scale_lr": 0.002, "num_iterations": 600, "device_batch_size": 32, "total_batch_size": 8192, "embedding_lr": 0.3, "unembedding_lr": 0.008, "weight_decay": 0.28, "matrix_lr": 0.02, "scalar_lr": 0.5, "warmup_steps": 40, "warmdown_ratio": 0.65, "final_lr_frac": 0.05, "target_param_data_ratio": 12, "eval_every": 50, "eval_tokens": 131072, "compile": 0, "save": 1}
 ternary config: TernaryConfig(linear=True, embed=True, value_embeds=True, quant_act=True, lm_head=False, gates=False)
 storage: {"ternary_weights": 6291456, "float_params": 1048733, "ternary_MB_int8": 6.291456, "ternary_MB_packed_1p58bit": 1.24256256, "float_MB_fp32": 4.194932}
 remaining decimal parameters: 1,048,733 values in 35 tensors
@@ -617,6 +617,6 @@ step 00597/00600 | loss: 4.616883 | raw: 4.6455 | lrm: 0.06 | dt: 2800ms | tok/s
 step 00598/00600 | loss: 4.658751 | raw: 5.0356 | lrm: 0.05 | dt: 2849ms | tok/s: 2,875 | flipped: 0.000070 | zeros: 0.3809
 step 00599/00600 | loss: 4.646601 | raw: 4.5372 | lrm: 0.05 | dt: 2846ms | tok/s: 2,878 | flipped: 0.000075 | zeros: 0.3808
 Step 00600 | Validation bpb: 1.695467
-Saved model to /home/claude/runs/p6/p6_tables_256.pt (10.5 MB)
+Saved model to runs/p6/p6_tables_256.pt (10.5 MB)
 Total training time: 28.19m
 Minimum validation bpb: 1.695467

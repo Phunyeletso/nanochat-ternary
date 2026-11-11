@@ -1,6 +1,6 @@
 === (re)start Thu Oct 22 16:36:02 SAST 2026 ===
 2026-10-22 16:36:05,790 - nanochat.common - [32m[1mINFO[0m - Distributed world size: 1
-args: {"tag": "p7_tables2", "out_dir": "/home/claude/runs/p7", "depth": 4, "aspect_ratio": 64, "head_dim": 64, "max_seq_len": 256, "window_pattern": "L", "ternary_linear": 1, "ternary_embed": 0, "ternary_value_embeds": 0, "ternary_lm_head": 0, "ternary_gates": 0, "ternary_all": 0, "act_tables": 2, "quant_act": 1, "flip_rule": "stochastic", "flip_frac": 0.001, "flip_lr": 0.001, "flip_schedule": "cosine", "flip_floor": 0.1, "counter_threshold": 8, "seed": 0, "bitnet": 0, "ternary_scale_lr": 0.002, "num_iterations": 600, "device_batch_size": 32, "total_batch_size": 8192, "embedding_lr": 0.3, "unembedding_lr": 0.008, "weight_decay": 0.28, "matrix_lr": 0.02, "scalar_lr": 0.5, "warmup_steps": 40, "warmdown_ratio": 0.65, "final_lr_frac": 0.05, "target_param_data_ratio": 12, "eval_every": 50, "eval_tokens": 131072, "compile": 0, "ckpt_every": 25, "resume": 1, "save": 1}
+args: {"tag": "p7_tables2", "out_dir": "runs/p7", "depth": 4, "aspect_ratio": 64, "head_dim": 64, "max_seq_len": 256, "window_pattern": "L", "ternary_linear": 1, "ternary_embed": 0, "ternary_value_embeds": 0, "ternary_lm_head": 0, "ternary_gates": 0, "ternary_all": 0, "act_tables": 2, "quant_act": 1, "flip_rule": "stochastic", "flip_frac": 0.001, "flip_lr": 0.001, "flip_schedule": "cosine", "flip_floor": 0.1, "counter_threshold": 8, "seed": 0, "bitnet": 0, "ternary_scale_lr": 0.002, "num_iterations": 600, "device_batch_size": 32, "total_batch_size": 8192, "embedding_lr": 0.3, "unembedding_lr": 0.008, "weight_decay": 0.28, "matrix_lr": 0.02, "scalar_lr": 0.5, "warmup_steps": 40, "warmdown_ratio": 0.65, "final_lr_frac": 0.05, "target_param_data_ratio": 12, "eval_every": 50, "eval_tokens": 131072, "compile": 0, "ckpt_every": 25, "resume": 1, "save": 1}
 ternary config: TernaryConfig(linear=True, embed=False, value_embeds=False, quant_act=True, lm_head=False, gates=False, act_qmax=4)
 storage: {"ternary_weights": 3145728, "float_params": 4194458, "ternary_MB_int8": 3.145728, "ternary_MB_packed_1p58bit": 0.62128128, "float_MB_fp32": 16.777832}
 remaining decimal parameters: 4,194,458 values in 35 tensors
@@ -509,12 +509,12 @@ step 00490/00600 | loss: 3.950808 | raw: 3.7459 | lrm: 0.32 | dt: 2474ms | tok/s
 step 00491/00600 | loss: 3.941682 | raw: 3.8596 | lrm: 0.32 | dt: 2620ms | tok/s: 3,126 | flipped: 0.000120 | zeros: 0.4787
 === (re)start Thu Oct 22 17:01:06 SAST 2026 ===
 2026-10-22 17:01:09,175 - nanochat.common - [32m[1mINFO[0m - Distributed world size: 1
-args: {"tag": "p7_tables2", "out_dir": "/home/claude/runs/p7", "depth": 4, "aspect_ratio": 64, "head_dim": 64, "max_seq_len": 256, "window_pattern": "L", "ternary_linear": 1, "ternary_embed": 0, "ternary_value_embeds": 0, "ternary_lm_head": 0, "ternary_gates": 0, "ternary_all": 0, "act_tables": 2, "quant_act": 1, "flip_rule": "stochastic", "flip_frac": 0.001, "flip_lr": 0.001, "flip_schedule": "cosine", "flip_floor": 0.1, "counter_threshold": 8, "seed": 0, "bitnet": 0, "ternary_scale_lr": 0.002, "num_iterations": 600, "device_batch_size": 32, "total_batch_size": 8192, "embedding_lr": 0.3, "unembedding_lr": 0.008, "weight_decay": 0.28, "matrix_lr": 0.02, "scalar_lr": 0.5, "warmup_steps": 40, "warmdown_ratio": 0.65, "final_lr_frac": 0.05, "target_param_data_ratio": 12, "eval_every": 50, "eval_tokens": 131072, "compile": 0, "ckpt_every": 25, "resume": 1, "save": 1}
+args: {"tag": "p7_tables2", "out_dir": "runs/p7", "depth": 4, "aspect_ratio": 64, "head_dim": 64, "max_seq_len": 256, "window_pattern": "L", "ternary_linear": 1, "ternary_embed": 0, "ternary_value_embeds": 0, "ternary_lm_head": 0, "ternary_gates": 0, "ternary_all": 0, "act_tables": 2, "quant_act": 1, "flip_rule": "stochastic", "flip_frac": 0.001, "flip_lr": 0.001, "flip_schedule": "cosine", "flip_floor": 0.1, "counter_threshold": 8, "seed": 0, "bitnet": 0, "ternary_scale_lr": 0.002, "num_iterations": 600, "device_batch_size": 32, "total_batch_size": 8192, "embedding_lr": 0.3, "unembedding_lr": 0.008, "weight_decay": 0.28, "matrix_lr": 0.02, "scalar_lr": 0.5, "warmup_steps": 40, "warmdown_ratio": 0.65, "final_lr_frac": 0.05, "target_param_data_ratio": 12, "eval_every": 50, "eval_tokens": 131072, "compile": 0, "ckpt_every": 25, "resume": 1, "save": 1}
 ternary config: TernaryConfig(linear=True, embed=False, value_embeds=False, quant_act=True, lm_head=False, gates=False, act_qmax=4)
 storage: {"ternary_weights": 3145728, "float_params": 4194458, "ternary_MB_int8": 3.145728, "ternary_MB_packed_1p58bit": 0.62128128, "float_MB_fp32": 16.777832}
 remaining decimal parameters: 4,194,458 values in 35 tensors
 batch_lr_scale=0.1250 weight_decay_scaled=0.734990
-RESUMED from step 475 (/home/claude/runs/p7/p7_tables2.resume.pt)
+RESUMED from step 475 (runs/p7/p7_tables2.resume.pt)
 step 00475/00600 | loss: 3.911842 | raw: 3.5885 | lrm: 0.35 | dt: 5688ms | tok/s: 1,440 | flipped: 0.000146 | zeros: 0.4792
 step 00476/00600 | loss: 3.878770 | raw: 3.5811 | lrm: 0.35 | dt: 3084ms | tok/s: 2,656 | flipped: 0.000144 | zeros: 0.4792
 step 00477/00600 | loss: 3.857823 | raw: 3.6693 | lrm: 0.35 | dt: 2964ms | tok/s: 2,764 | flipped: 0.000126 | zeros: 0.4791
@@ -643,6 +643,6 @@ step 00597/00600 | loss: 3.812451 | raw: 3.4923 | lrm: 0.06 | dt: 2494ms | tok/s
 step 00598/00600 | loss: 3.806781 | raw: 3.7557 | lrm: 0.05 | dt: 2672ms | tok/s: 3,065 | flipped: 0.000080 | zeros: 0.4761
 step 00599/00600 | loss: 3.834021 | raw: 4.0792 | lrm: 0.05 | dt: 2780ms | tok/s: 2,946 | flipped: 0.000082 | zeros: 0.4760
 Step 00600 | Validation bpb: 1.416015
-Saved model to /home/claude/runs/p7/p7_tables2.pt (19.9 MB)
+Saved model to runs/p7/p7_tables2.pt (19.9 MB)
 Total training time: 26.29m
 Minimum validation bpb: 1.416015

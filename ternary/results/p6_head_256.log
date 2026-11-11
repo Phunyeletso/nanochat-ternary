@@ -1,5 +1,5 @@
 2026-10-21 17:31:38,363 - nanochat.common - [32m[1mINFO[0m - Distributed world size: 1
-args: {"tag": "p6_head_256", "out_dir": "/home/claude/runs/p6", "depth": 4, "aspect_ratio": 64, "head_dim": 64, "max_seq_len": 256, "window_pattern": "L", "ternary_linear": 1, "ternary_embed": 0, "ternary_value_embeds": 0, "ternary_lm_head": 1, "ternary_gates": 0, "ternary_all": 0, "quant_act": 1, "flip_rule": "stochastic", "flip_frac": 0.001, "flip_lr": 0.001, "flip_schedule": "cosine", "flip_floor": 0.1, "counter_threshold": 8, "seed": 0, "bitnet": 0, "ternary_scale_lr": 0.002, "num_iterations": 600, "device_batch_size": 32, "total_batch_size": 8192, "embedding_lr": 0.3, "unembedding_lr": 0.008, "weight_decay": 0.28, "matrix_lr": 0.02, "scalar_lr": 0.5, "warmup_steps": 40, "warmdown_ratio": 0.65, "final_lr_frac": 0.05, "target_param_data_ratio": 12, "eval_every": 50, "eval_tokens": 131072, "compile": 0, "save": 1}
+args: {"tag": "p6_head_256", "out_dir": "runs/p6", "depth": 4, "aspect_ratio": 64, "head_dim": 64, "max_seq_len": 256, "window_pattern": "L", "ternary_linear": 1, "ternary_embed": 0, "ternary_value_embeds": 0, "ternary_lm_head": 1, "ternary_gates": 0, "ternary_all": 0, "quant_act": 1, "flip_rule": "stochastic", "flip_frac": 0.001, "flip_lr": 0.001, "flip_schedule": "cosine", "flip_floor": 0.1, "counter_threshold": 8, "seed": 0, "bitnet": 0, "ternary_scale_lr": 0.002, "num_iterations": 600, "device_batch_size": 32, "total_batch_size": 8192, "embedding_lr": 0.3, "unembedding_lr": 0.008, "weight_decay": 0.28, "matrix_lr": 0.02, "scalar_lr": 0.5, "warmup_steps": 40, "warmdown_ratio": 0.65, "final_lr_frac": 0.05, "target_param_data_ratio": 12, "eval_every": 50, "eval_tokens": 131072, "compile": 0, "save": 1}
 ternary config: TernaryConfig(linear=True, embed=False, value_embeds=False, quant_act=True, lm_head=True, gates=False)
 storage: {"ternary_weights": 4194304, "float_params": 3145883, "ternary_MB_int8": 4.194304, "ternary_MB_packed_1p58bit": 0.8283750400000001, "float_MB_fp32": 12.583532}
 remaining decimal parameters: 3,145,883 values in 35 tensors
@@ -617,6 +617,6 @@ step 00597/00600 | loss: 4.299226 | raw: 4.3390 | lrm: 0.06 | dt: 2555ms | tok/s
 step 00598/00600 | loss: 4.353420 | raw: 4.8412 | lrm: 0.05 | dt: 2690ms | tok/s: 3,045 | flipped: 0.000073 | zeros: 0.4372
 step 00599/00600 | loss: 4.339875 | raw: 4.2180 | lrm: 0.05 | dt: 2334ms | tok/s: 3,510 | flipped: 0.000081 | zeros: 0.4372
 Step 00600 | Validation bpb: 1.628453
-Saved model to /home/claude/runs/p6/p6_head_256.pt (16.8 MB)
+Saved model to runs/p6/p6_head_256.pt (16.8 MB)
 Total training time: 26.52m
 Minimum validation bpb: 1.627777

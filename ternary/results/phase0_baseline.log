@@ -656,9 +656,9 @@ step 00597/00600 (99.50%) | loss: 3.383960 | lrm: 0.06 | dt: 1643.77ms | tok/sec
 step 00598/00600 (99.67%) | loss: 3.431172 | lrm: 0.05 | dt: 1520.04ms | tok/sec: 5,389 | bf16_mfu: 0.00 | epoch: 3 pq: 1 rg: 4 | total time: 15.95m | eta: 0.1m
 step 00599/00600 (99.83%) | loss: 3.419150 | lrm: 0.05 | dt: 1772.96ms | tok/sec: 4,620 | bf16_mfu: 0.00 | epoch: 3 pq: 1 rg: 4 | total time: 15.98m | eta: 0.0m
 Step 00600 | Validation bpb: 1.293764
-2026-10-20 19:51:37,932 - nanochat.checkpoint_manager - [32m[1mINFO[0m - Saved model parameters to: /home/claude/nc_base/base_checkpoints/phase0_baseline/model_000600.pt
-2026-10-20 19:51:37,933 - nanochat.checkpoint_manager - [32m[1mINFO[0m - Saved metadata to: /home/claude/nc_base/base_checkpoints/phase0_baseline/meta_000600.json
-2026-10-20 19:51:38,144 - nanochat.checkpoint_manager - [32m[1mINFO[0m - Saved optimizer state to: /home/claude/nc_base/base_checkpoints/phase0_baseline/optim_000600_rank0.pt
+2026-10-20 19:51:37,932 - nanochat.checkpoint_manager - [32m[1mINFO[0m - Saved model parameters to: $NANOCHAT_BASE_DIR/base_checkpoints/phase0_baseline/model_000600.pt
+2026-10-20 19:51:37,933 - nanochat.checkpoint_manager - [32m[1mINFO[0m - Saved metadata to: $NANOCHAT_BASE_DIR/base_checkpoints/phase0_baseline/meta_000600.json
+2026-10-20 19:51:38,144 - nanochat.checkpoint_manager - [32m[1mINFO[0m - Saved optimizer state to: $NANOCHAT_BASE_DIR/base_checkpoints/phase0_baseline/optim_000600_rank0.pt
 Peak memory usage: 0.00MiB
 Total training time: 15.98m
 Minimum validation bpb: 1.293764
