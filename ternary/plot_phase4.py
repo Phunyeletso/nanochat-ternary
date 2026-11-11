@@ -7,7 +7,7 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import numpy as np
 
-R = "/home/claude/runs/"
+R = "runs/"
 
 # 1) additions saved
 rows = list(csv.DictReader(open(R + "phase4_counts.csv")))

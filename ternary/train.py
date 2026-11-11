@@ -34,7 +34,7 @@ from ternary.model import (TernaryConfig, convert_to_ternary, setup_optimizer_te
 
 p = argparse.ArgumentParser()
 p.add_argument("--tag", type=str, required=True)
-p.add_argument("--out-dir", type=str, default="/home/claude/runs")
+p.add_argument("--out-dir", type=str, default="runs")
 # model (defaults = Phase 0 baseline)
 p.add_argument("--depth", type=int, default=4)
 p.add_argument("--aspect-ratio", type=int, default=64)

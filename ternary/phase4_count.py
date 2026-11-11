@@ -1,7 +1,7 @@
 """
 Phase 4 experiment: additions needed by the row-formula plan vs naive add/subtract, for the model's
 matrix shapes and several zero fractions. Every plan is checked for exactness before it is counted.
-    python -m ternary.phase4_count --out /home/claude/runs/phase4_counts.csv
+    python -m ternary.phase4_count --out runs/phase4_counts.csv
 """
 import argparse
 import csv
@@ -15,7 +15,7 @@ SHAPES = [(64, 64), (128, 128), (256, 256), (512, 512), (1024, 256), (256, 1024)
 ZFS = [0.3, 0.5, 0.7]
 
 ap = argparse.ArgumentParser()
-ap.add_argument("--out", default="/home/claude/runs/phase4_counts.csv")
+ap.add_argument("--out", default="runs/phase4_counts.csv")
 args = ap.parse_args()
 
 rows = []

@@ -1,6 +1,6 @@
 """
 Generate text from a model saved by ternary/train.py.
-    python -m ternary.generate /home/claude/runs/p5/<tag>.pt --prompt "It was a dark" --tokens 120
+    python -m ternary.generate runs/ternary/<tag>.pt --prompt "It was a dark" --tokens 120
 Works for all three kinds: full precision (A), BitNet with latent weights (B), direct ternary (C).
 For C the weights used are exactly the stored int8 {-1,0,+1} values and one scale per matrix.
 """

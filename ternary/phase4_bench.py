@@ -17,7 +17,10 @@ from ternary.rowformula import build_plan, naive_adds, random_ternary
 from ternary.rowformula_fast import FastPlanMatmul, FastNaiveMatmul
 
 torch.set_num_threads(1)
-BITNET_BIN = "/home/claude/bench_bitnet/test_gemm_kernel"   # bitnet.cpp's own I2_S GEMM benchmark (ggml_gemm_i2_i8_s)
+BITNET_BIN = os.environ.get(
+    "BITNET_BIN",
+    os.path.join("bitnet.cpp", "build", "bin", "test_gemm_kernel"),
+)  # bitnet.cpp's own I2_S GEMM benchmark (ggml_gemm_i2_i8_s)
 
 
 def bitnet_cpp_us(n_in, N, n_out):
@@ -55,7 +58,7 @@ def bench(fn, min_time=0.3, repeats=7):
     return float(np.median(times))
 
 
-out = open("/home/claude/runs/phase4_bench.csv", "w", newline="")
+out = open("runs/phase4_bench.csv", "w", newline="")
 wr = csv.writer(out)
 wr.writerow(["n_out", "n_in", "N", "method", "time_us", "adds_or_madds"])
 print(f"threads: torch={torch.get_num_threads()} OMP={os.environ.get('OMP_NUM_THREADS')}")

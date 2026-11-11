@@ -34,7 +34,7 @@ def flip(W, frac, rng):
     return W2
 
 
-out = open("/home/claude/runs/phase4_patch.csv", "w", newline="")
+out = open("runs/phase4_patch.csv", "w", newline="")
 wr = csv.writer(out)
 wr.writerow(["n_out", "n_in", "flip_frac", "step", "rows_changed", "patch_s", "patched_adds",
              "rebuild_s", "rebuilt_adds", "naive_adds", "exact"])

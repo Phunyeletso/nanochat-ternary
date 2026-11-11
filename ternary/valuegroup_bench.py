@@ -14,7 +14,7 @@ torch.set_num_threads(1)
 SHAPES = [(256, 256), (1024, 256), (256, 1024)]
 BITS = [4, 8]
 NS = [1, 16, 256]
-R = "/home/claude/runs/"
+R = "runs/"
 
 cw = csv.writer(open(R + "valuegroup_counts.csv", "w", newline=""))
 cw.writerow(["n_out", "n_in", "bits", "naive_mults", "grouped_mults", "mults_saved_pct", "adds_both",

@@ -1,7 +1,7 @@
 """
 Phase 3 chart: A (full precision), B (BitNet b1.58, latent weights), C (direct ternary, stochastic flip),
 each run with seeds 0 and 1. Thin lines = individual seeds, thick = mean.
-    python -m ternary.plot_phase3 --runs-dir /home/claude/runs --out phase3_abc.png
+    python -m ternary.plot_phase3 --runs-dir runs --out runs/phase3_abc.png
 """
 import argparse
 import json
@@ -26,8 +26,8 @@ def load(path):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--runs-dir", default="/home/claude/runs")
-    ap.add_argument("--out", default="/home/claude/runs/phase3_abc.png")
+    ap.add_argument("--runs-dir", default="runs")
+    ap.add_argument("--out", default="runs/phase3_abc.png")
     ap.add_argument("--seeds", default="0,1")
     args = ap.parse_args()
     seeds = [int(s) for s in args.seeds.split(",")]
