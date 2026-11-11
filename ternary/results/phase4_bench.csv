@@ -1,0 +1,46 @@
+n_out,n_in,N,method,time_us,adds_or_madds
+256,256,1,numpy float32 matmul (BLAS),4.29,65536
+256,256,1,torch float32 matmul,7.01,65536
+256,256,1,naive add/sub (Numba),88.94,32603
+256,256,1,row-formula plan (Numba),47.74,13309
+256,256,1,"bitnet.cpp I2_S kernel (C++, AVX)",2.03,65536
+256,256,16,numpy float32 matmul (BLAS),53.28,1048576
+256,256,16,torch float32 matmul,28.83,1048576
+256,256,16,naive add/sub (Numba),132.47,521648
+256,256,16,row-formula plan (Numba),63.66,212944
+256,256,16,"bitnet.cpp I2_S kernel (C++, AVX)",21.8,1048576
+256,256,256,numpy float32 matmul (BLAS),308.42,16777216
+256,256,256,torch float32 matmul,263.41,16777216
+256,256,256,naive add/sub (Numba),695.84,8346368
+256,256,256,row-formula plan (Numba),876.17,3407104
+256,256,256,"bitnet.cpp I2_S kernel (C++, AVX)",344.22,16777216
+1024,256,1,numpy float32 matmul (BLAS),13.77,262144
+1024,256,1,torch float32 matmul,17.14,262144
+1024,256,1,naive add/sub (Numba),332.4,130456
+1024,256,1,row-formula plan (Numba),201.61,48071
+1024,256,1,"bitnet.cpp I2_S kernel (C++, AVX)",10.6,262144
+1024,256,16,numpy float32 matmul (BLAS),188.87,4194304
+1024,256,16,torch float32 matmul,104.78,4194304
+1024,256,16,naive add/sub (Numba),497.45,2087296
+1024,256,16,row-formula plan (Numba),271.88,769136
+1024,256,16,"bitnet.cpp I2_S kernel (C++, AVX)",86.03,4194304
+1024,256,256,numpy float32 matmul (BLAS),1185.54,67108864
+1024,256,256,torch float32 matmul,1134.0,67108864
+1024,256,256,naive add/sub (Numba),2713.97,33396736
+1024,256,256,row-formula plan (Numba),4000.12,12306176
+1024,256,256,"bitnet.cpp I2_S kernel (C++, AVX)",1606.96,67108864
+256,1024,1,numpy float32 matmul (BLAS),12.52,262144
+256,1024,1,torch float32 matmul,23.59,262144
+256,1024,1,naive add/sub (Numba),346.08,131224
+256,1024,1,row-formula plan (Numba),213.04,47972
+256,1024,1,"bitnet.cpp I2_S kernel (C++, AVX)",4.8,262144
+256,1024,16,numpy float32 matmul (BLAS),194.74,4194304
+256,1024,16,torch float32 matmul,124.82,4194304
+256,1024,16,naive add/sub (Numba),489.15,2099584
+256,1024,16,row-formula plan (Numba),292.09,767552
+256,1024,16,"bitnet.cpp I2_S kernel (C++, AVX)",108.78,4194304
+256,1024,256,numpy float32 matmul (BLAS),1311.28,67108864
+256,1024,256,torch float32 matmul,1361.84,67108864
+256,1024,256,naive add/sub (Numba),4205.18,33593344
+256,1024,256,row-formula plan (Numba),4310.39,12280832
+256,1024,256,"bitnet.cpp I2_S kernel (C++, AVX)",1123.66,67108864

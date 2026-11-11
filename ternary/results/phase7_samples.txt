@@ -1,0 +1,20 @@
+model: p7_bits8
+--- prompt: 'It was a cold morning, and'
+It was a cold morning, and the day, that the poor Barket was the restore of the the great, the day in the day, but was the next day to the little Croft with the last came out of the East, and the same was a very high in the City of his the morning
+--- prompt: 'And God said unto'
+And God said unto them after these are these are written, I was the law, And he said, The children of Israel was not in the wilderness of Menarius, and the rest of the matters, And it came to pass through the city was, as a man like the fire of gold, and
+
+model: p7_tables3
+--- prompt: 'It was a cold morning, and'
+It was a cold morning, and the day, that the poor Braas was the first to be cut off, but the moment in the street, but was the next day; but the Cropitless, and not the same time in the garden which the was found in time in the year without knowing what the morning
+--- prompt: 'And God said unto'
+And God said unto them after these, Lord, if ye shall be the law, then is the word of the Lord.
+Bursal, even the Lord of the Lord Jesus, and the Lord our selves, when be put upon the Lord, the Lord, it is in the truth.
+"Sto I cannot
+
+model: p7_tables1
+--- prompt: 'It was a cold morning, and'
+It was a cold morning, and the stabell, she was, for was the father was a turance, at all in the two young ladies of the next day to the little Cropseen, and not a mas! There was very united, which was in the flowing his father, and
+--- prompt: 'And God said unto'
+And God said unto them, This is my right hand, I was the law, And he said, Wey are in our peace, If even ye of the cupid, but the world, you may not know what shall not know I shall dost you, and is good to pass after dinner, and
+

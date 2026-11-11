@@ -1,0 +1,394 @@
+<title>Ternary Coin Tables</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans+Condensed:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+/* Layout: one reading column. Coins first (pick a number), then the full lookup grid, then the 3x3 matrix example, then the trade-off. */
+:root {
+  --bg: #f6f7f8; --surface: #ffffff; --ink: #18202a; --muted: #5b6573; --line: #d9dee5;
+  --plus: #0f7a6c; --plus-soft: #dff2ee;      /* +1: give the coin */
+  --minus: #b4531f; --minus-soft: #f8e6db;    /* -1: take the coin back as change */
+  --zero: #9aa3ae;                             /* 0: coin not used */
+  --focus: #4b5bb5; --focus-soft: #e5e8f7;
+  --font-display: "IBM Plex Sans Condensed", "Arial Narrow", system-ui, sans-serif;
+  --font-body: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #11161c; --surface: #19212a; --ink: #e6ebf0; --muted: #9aa6b3; --line: #2c3743;
+    --plus: #4cc7b4; --plus-soft: #143a35; --minus: #f0915c; --minus-soft: #47281a; --zero: #6b7785;
+    --focus: #95a3f2; --focus-soft: #232a4d; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #11161c; --surface: #19212a; --ink: #e6ebf0; --muted: #9aa6b3; --line: #2c3743;
+  --plus: #4cc7b4; --plus-soft: #143a35; --minus: #f0915c; --minus-soft: #47281a; --zero: #6b7785;
+  --focus: #95a3f2; --focus-soft: #232a4d; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  background: var(--bg); color: var(--ink); font-family: var(--font-body); font-size: 16px; line-height: 1.55;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 28px 64px;
+}
+.wrap { max-width: 860px; margin: 0 auto; display: flex; flex-direction: column; gap: 36px; }
+h1, h2, h3 { font-family: var(--font-display); text-wrap: balance; margin: 0; line-height: 1.15; }
+h1 { font-size: clamp(1.9rem, 4.5vw, 2.6rem); font-weight: 700; }
+h2 { font-size: 1.5rem; font-weight: 600; }
+h3 { font-size: 1.1rem; font-weight: 600; }
+p { margin: 0; max-width: 68ch; }
+.lede { color: var(--muted); font-size: 1.05rem; }
+.eyebrow { font-family: var(--font-mono); font-size: 0.75rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+header, section { display: flex; flex-direction: column; gap: 12px; }
+.muted { color: var(--muted); }
+.mono { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 20px; display: flex; flex-direction: column; gap: 18px; }
+
+/* number picker */
+.picker { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 16px; }
+.picker button { font: inherit; font-weight: 600; width: 40px; height: 40px; border-radius: 8px; border: 1px solid var(--line); background: var(--bg); color: var(--ink); cursor: pointer; font-size: 1.2rem; }
+.picker button:focus-visible, .picker input:focus-visible, .btn:focus-visible, td.pick:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+.bignum { font-family: var(--font-display); font-weight: 700; font-size: 3rem; min-width: 2.6ch; text-align: center; font-variant-numeric: tabular-nums; }
+.picker input[type=range] { flex: 1 1 200px; min-width: 0; accent-color: var(--focus); }
+.tables-sel { display: flex; gap: 6px; align-items: center; font-size: 0.9rem; }
+.tables-sel button { width: auto; height: auto; padding: 4px 10px; font-size: 0.9rem; font-weight: 500; }
+.tables-sel button[aria-pressed="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+
+/* coins */
+.coins { display: flex; flex-wrap: wrap; gap: 14px; }
+.coin-col { display: flex; flex-direction: column; align-items: center; gap: 8px; min-width: 104px; flex: 1 1 104px; background: var(--bg); border-radius: 10px; padding: 12px 8px; }
+.coin-col .tname { font-family: var(--font-mono); font-size: 0.75rem; color: var(--muted); }
+.coin { width: 64px; height: 64px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-family: var(--font-display); font-weight: 700; font-size: 1.5rem; border: 3px solid var(--zero); color: var(--zero); background: transparent; }
+.coin.p { border-color: var(--plus); background: var(--plus); color: var(--surface); }
+.coin.m { border-color: var(--minus); color: var(--minus); border-style: dashed; background: var(--minus-soft); }
+.digit { font-family: var(--font-mono); font-weight: 600; font-size: 1.1rem; }
+.digit.p { color: var(--plus); } .digit.m { color: var(--minus); } .digit.z { color: var(--zero); }
+.act { font-size: 0.85rem; color: var(--muted); text-align: center; }
+.equation { font-family: var(--font-mono); font-size: 1.15rem; background: var(--bg); padding: 10px 14px; border-radius: 8px; overflow-x: auto; white-space: nowrap; }
+.equation .p { color: var(--plus); font-weight: 600; } .equation .m { color: var(--minus); font-weight: 600; }
+.warn { color: var(--minus); font-size: 0.9rem; }
+
+/* tables */
+.scroll { overflow-x: auto; max-width: 100%; }
+table.grid { border-collapse: separate; border-spacing: 2px; font-family: var(--font-mono); font-size: 0.82rem; font-variant-numeric: tabular-nums; }
+table.grid th, table.grid td { padding: 4px 8px; text-align: center; border-radius: 4px; }
+table.grid th { color: var(--muted); font-weight: 500; font-size: 0.75rem; }
+table.grid td { background: var(--bg); }
+td.p { background: var(--plus-soft) !important; color: var(--plus); font-weight: 600; }
+td.m { background: var(--minus-soft) !important; color: var(--minus); font-weight: 600; }
+td.z { color: var(--zero); }
+td.num { font-weight: 600; color: var(--ink); background: transparent !important; }
+tr.cur td { outline: 2px solid var(--focus); }
+td.sel { outline: 2px solid var(--focus); outline-offset: -1px; }
+td.pick { cursor: pointer; }
+
+.lookup { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 12px; }
+
+/* matrix flow */
+.flow { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 12px; }
+.m { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.m .cap { font-family: var(--font-mono); font-size: 0.72rem; color: var(--muted); }
+.op { font-family: var(--font-mono); font-size: 1.2rem; color: var(--muted); }
+table.mat { border-collapse: separate; border-spacing: 2px; font-family: var(--font-mono); font-size: 0.85rem; font-variant-numeric: tabular-nums; }
+table.mat td { padding: 4px 8px; text-align: right; border-radius: 4px; background: var(--bg); min-width: 2.6ch; }
+.check { font-weight: 600; color: var(--plus); }
+.btn { font: inherit; font-weight: 500; border: 1px solid var(--line); background: var(--bg); color: var(--ink); border-radius: 8px; padding: 7px 14px; cursor: pointer; width: fit-content; }
+.steps { display: flex; flex-direction: column; gap: 14px; }
+.step { display: flex; flex-direction: column; gap: 8px; }
+.step h3 .k { font-family: var(--font-mono); font-size: 0.85rem; color: var(--muted); font-weight: 500; margin-left: 6px; }
+
+.facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
+.fact { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; display: flex; flex-direction: column; gap: 6px; }
+.fact .tag { font-family: var(--font-mono); font-size: 0.72rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; }
+footer { color: var(--muted); font-size: 0.85rem; }
+</style>
+
+<div class="wrap">
+  <header>
+    <span class="eyebrow">balanced ternary · data as −1, 0, +1 tables</span>
+    <h1>Ternary Coin Tables</h1>
+    <p class="lede">Any whole number can be written with only −1, 0 and +1, if you have coins of different sizes: 1, 3, 9, 27. For each coin you either give it (+1), skip it (0), or take it back as change (−1).</p>
+  </header>
+
+  <section aria-labelledby="pick-h">
+    <h2 id="pick-h">Pick a number</h2>
+    <div class="panel">
+      <div class="picker">
+        <button id="dec" aria-label="One less">−</button>
+        <span class="bignum" id="num" aria-live="polite">5</span>
+        <button id="inc" aria-label="One more">+</button>
+        <input type="range" id="slider" min="-40" max="40" value="5" aria-label="Number">
+        <span class="tables-sel" role="group" aria-label="How many tables">
+          <span class="muted">tables:</span>
+          <button id="t2" aria-pressed="false">2</button>
+          <button id="t3" aria-pressed="false">3</button>
+          <button id="t4" aria-pressed="true">4</button>
+        </span>
+      </div>
+      <div class="coins" id="coins"></div>
+      <div class="equation" id="eq"></div>
+      <p class="warn" id="warn" hidden></p>
+    </div>
+    <div class="scroll">
+      <table class="grid" aria-label="How far each number of tables reaches">
+        <tr><th>tables</th><th>coins</th><th>numbers you can write</th></tr>
+        <tr><td>1</td><td>1</td><td>−1 to 1</td></tr>
+        <tr><td>2</td><td>3, 1</td><td>−4 to 4</td></tr>
+        <tr><td>3</td><td>9, 3, 1</td><td>−13 to 13</td></tr>
+        <tr><td>4</td><td>27, 9, 3, 1</td><td>−40 to 40</td></tr>
+        <tr><td>5</td><td>81, 27, 9, 3, 1</td><td>−121 to 121 (about the same as 8-bit data, −128 to 127)</td></tr>
+      </table>
+    </div>
+  </section>
+
+  <section aria-labelledby="all-h">
+    <h2 id="all-h">Every number from −13 to 13, with three tables</h2>
+    <p>Read across a row: the number on the left equals 9 × (nines) + 3 × (threes) + 1 × (ones). Each table only ever holds −1, 0 or +1. Your current number is outlined.</p>
+    <div class="lookup" id="lookup"></div>
+  </section>
+
+  <section aria-labelledby="mat-h">
+    <h2 id="mat-h">Your 3 × 3 example</h2>
+    <p>A small data matrix, like the output of a layer. Click any cell of the data to follow it through the tables.</p>
+    <div class="panel steps">
+      <div class="step">
+        <h3>1. Split the data into three coin tables</h3>
+        <p>Each number is written with the 9, 3 and 1 coins. Collect all the nines digits into one table, the threes into another, the ones into a third. Every table holds only −1, 0, +1.</p>
+        <div class="flow" id="split"></div>
+      </div>
+      <div class="step">
+        <h3>2. Multiply each table by the ternary weights <span class="k">ternary × ternary</span></h3>
+        <p>Both sides are −1, 0, +1, so every product is −1, 0 or +1 and every multiply is just adding and subtracting. You do this three times, once per table.</p>
+        <div class="flow" id="mults"></div>
+      </div>
+      <div class="step">
+        <h3>3. Combine with the coin values</h3>
+        <p>Multiply the three results by 9, 3 and 1 and add them. That gives exactly the same answer as multiplying the original data by the weights.</p>
+        <div class="flow" id="combine"></div>
+        <p id="checkline" class="check"></p>
+      </div>
+      <button class="btn" id="newex">New example</button>
+    </div>
+  </section>
+
+  <section aria-labelledby="bits-h" id="bits">
+    <h2 id="bits-h">Multiplying two ternary rows with bits</h2>
+    <p>A dot product of two ternary rows (one row of Q with one row of K, say) can be done without any multiplying. Each row is stored as two rows of bits: one marks the +1s, the other marks the −1s. Zeros are off in both. Click any digit to change it.</p>
+    <div class="panel steps">
+      <div class="step">
+        <h3>1. Two ternary rows</h3>
+        <div class="scroll"><table class="grid" id="bt-rows"></table></div>
+      </div>
+      <div class="step">
+        <h3>2. Store each row as two rows of bits</h3>
+        <p>A 1 means "this position is +1" (in the plus row) or "this position is −1" (in the minus row).</p>
+        <div class="scroll"><table class="grid" id="bt-bits"></table></div>
+      </div>
+      <div class="step">
+        <h3>3. Four ANDs, four counts</h3>
+        <p>AND keeps a 1 only where both bit rows have a 1. Counting the 1s (a popcount) tells how many positions match. Same signs add, opposite signs subtract.</p>
+        <div class="scroll"><table class="grid" id="bt-and"></table></div>
+      </div>
+      <div class="step">
+        <h3>4. The answer</h3>
+        <div class="equation" id="bt-eq"></div>
+        <p id="bt-check" class="check"></p>
+        <p class="muted" id="bt-ops"></p>
+      </div>
+      <button class="btn" id="bt-new">New rows</button>
+    </div>
+    <div class="facts">
+      <div class="fact"><span class="tag">why it is fast</span><h3>64 digits per step</h3><p>A computer word holds 64 bits, so one AND and one popcount handle 64 positions at once. A full dot product of 64 digits is 4 ANDs, 4 counts and 3 adds, with no multiplying.</p></div>
+      <div class="fact"><span class="tag">stacked tables</span><h3>Every table pair gets this treatment</h3><p>With 3 coin tables on each side, Q · K needs 9 table pairs, each done with these 4 counts, then weighted by 81, 27, 27, 9, 9, 9, 3, 3 and 1 and added.</p></div>
+      <div class="fact"><span class="tag">open question</span><h3>Do GPUs win with this?</h3><p>GPUs have far fewer bit-counting units than their fast 8-bit multiply units. Whether this beats plain 8-bit on a GPU has not been shown. It can be tested.</p></div>
+    </div>
+  </section>
+
+  <section aria-labelledby="catch-h">
+    <h2 id="catch-h">What it costs</h2>
+    <div class="facts">
+      <div class="fact"><span class="tag">exact</span><h3>Nothing is lost</h3><p>The tables represent every number exactly, as long as you have enough coin sizes for the biggest number.</p></div>
+      <div class="fact"><span class="tag">cost</span><h3>One multiply becomes several</h3><p>Three tables means three ternary multiplies instead of one. Five tables covers the same range as 8-bit data, so it is five cheap multiplies against one 8-bit multiply.</p></div>
+      <div class="fact"><span class="tag">repeat</span><h3>The output is not ternary again</h3><p>The combined result is ordinary whole numbers (see step 3). Before the next layer it has to be split into coin tables again.</p></div>
+      <div class="fact"><span class="tag">unproven</span><h3>Whether it saves anything</h3><p>It pays off only on hardware where a ternary × ternary multiply is much cheaper than an 8-bit one. On a normal CPU that is untested and may not hold.</p></div>
+    </div>
+  </section>
+
+  <footer>This number system is called balanced ternary. It is old: the Soviet Setun computer used it in 1958. Splitting numbers into layers like this is also known as bit-plane or bit-serial computing.</footer>
+</div>
+
+<script>
+(function () {
+  // balanced ternary digits, least significant first, padded to k digits
+  function bt(n, k) {
+    const d = [];
+    let x = n;
+    while (x !== 0) {
+      let r = ((x % 3) + 3) % 3;
+      if (r === 2) { d.push(-1); x = (x + 1) / 3; } else { d.push(r); x = (x - r) / 3; }
+    }
+    while (d.length < k) d.push(0);
+    return d;
+  }
+  const maxFor = (k) => (Math.pow(3, k) - 1) / 2;
+  const cls = (v) => v === 1 ? "p" : (v === -1 ? "m" : "z");
+  const sgn = (v) => v === 1 ? "+1" : (v === -1 ? "−1" : "0");
+
+  let n = 5, k = 4;
+  try { const s = localStorage.getItem("ct-k"); if (s === "2" || s === "3" || s === "4") k = +s; } catch (e) {}
+
+  const $ = (id) => document.getElementById(id);
+  function renderCoins() {
+    $("num").textContent = n;
+    $("slider").value = n;
+    ["t2", "t3", "t4"].forEach(id => $(id).setAttribute("aria-pressed", String(+id.slice(1) === k)));
+    const fits = Math.abs(n) <= maxFor(k);
+    const d = bt(n, k);
+    let h = "";
+    const parts = [];
+    for (let i = k - 1; i >= 0; i--) {
+      const val = Math.pow(3, i), v = fits ? d[i] : 0;
+      const act = v === 1 ? "give it" : (v === -1 ? "take it back" : "not used");
+      h += '<div class="coin-col"><span class="tname">' + val + "s table</span>" +
+           '<div class="coin ' + (v === 1 ? "p" : v === -1 ? "m" : "") + '">' + val + "</div>" +
+           '<span class="digit ' + cls(v) + '">' + sgn(v) + '</span><span class="act">' + act + "</span></div>";
+      if (v !== 0) parts.push({ v, val });
+    }
+    $("coins").innerHTML = h;
+    const w = $("warn");
+    if (!fits) {
+      w.hidden = false;
+      w.textContent = "With " + k + " tables you can only reach −" + maxFor(k) + " to " + maxFor(k) + ". Add a table to write " + n + ".";
+      $("eq").innerHTML = n + " = ?";
+    } else {
+      w.hidden = true;
+      if (!parts.length) { $("eq").innerHTML = "0 = no coins at all"; }
+      else {
+        const s = parts.map((p, i) => '<span class="' + (p.v > 0 ? "p" : "m") + '">' + (p.v > 0 ? (i ? "+ " : "") : "− ") + p.val + "</span>").join(" ");
+        $("eq").innerHTML = n + " = " + s;
+      }
+    }
+    renderLookup();
+  }
+  function renderLookup() {
+    const make = (from, to) => {
+      let h = '<div class="scroll"><table class="grid"><tr><th>number</th><th>9s</th><th>3s</th><th>1s</th></tr>';
+      for (let x = from; x <= to; x++) {
+        const d = bt(x, 3);
+        h += "<tr" + (x === n ? ' class="cur"' : "") + '><td class="num">' + x + "</td>" +
+             [2, 1, 0].map(i => '<td class="' + cls(d[i]) + '">' + sgn(d[i]) + "</td>").join("") + "</tr>";
+      }
+      return h + "</table></div>";
+    };
+    $("lookup").innerHTML = make(-13, -5) + make(-4, 4) + make(5, 13);
+  }
+
+  // ---------- 3x3 example ----------
+  let X = [[2, 0, -1], [3, 1, 4], [-2, 5, 1]];
+  const W = [[1, 0, -1], [0, 1, 1], [-1, 1, 0]];
+  let sel = [0, 0];
+  const mm = (A, B) => A.map(r => B[0].map((_, j) => r.reduce((s, v, t) => s + v * B[t][j], 0)));
+  function mat(M, cap, opts) {
+    const o = opts || {};
+    let h = '<div class="m"><span class="cap">' + cap + '</span><div class="scroll"><table class="mat">';
+    M.forEach((r, i) => {
+      h += "<tr>" + r.map((v, j) => {
+        let c = o.tern ? cls(v) : "";
+        if (o.sel && sel[0] === i && sel[1] === j) c += " sel";
+        if (o.pick) c += " pick";
+        const txt = o.tern ? sgn(v) : String(v).replace("-", "−");
+        return '<td class="' + c + '"' + (o.pick ? ' tabindex="0" data-i="' + i + '" data-j="' + j + '"' : "") + ">" + txt + "</td>";
+      }).join("") + "</tr>";
+    });
+    return h + "</table></div></div>";
+  }
+  const op = (c) => '<span class="op">' + c + "</span>";
+  function renderMatrix() {
+    const D = X.map(r => r.map(v => bt(v, 3)));
+    const X9 = D.map(r => r.map(d => d[2])), X3 = D.map(r => r.map(d => d[1])), X1 = D.map(r => r.map(d => d[0]));
+    const v = X[sel[0]][sel[1]];
+    $("split").innerHTML = mat(X, "data (click a cell)", { sel: true, pick: true }) + op("=") +
+      mat(X9, "9s table", { tern: true, sel: true }) + op("× 9 +") +
+      mat(X3, "3s table", { tern: true, sel: true }) + op("× 3 +") +
+      mat(X1, "1s table", { tern: true, sel: true }) + op("× 1") +
+      '<p class="muted" style="flex-basis:100%">Selected cell: ' + String(v).replace("-", "−") + " = 9 × (" + sgn(X9[sel[0]][sel[1]]) + ") + 3 × (" + sgn(X3[sel[0]][sel[1]]) + ") + 1 × (" + sgn(X1[sel[0]][sel[1]]) + ")</p>";
+    const Y9 = mm(X9, W), Y3 = mm(X3, W), Y1 = mm(X1, W);
+    $("mults").innerHTML =
+      mat(X9, "9s table", { tern: true }) + op("·") + mat(W, "weights", { tern: true }) + op("=") + mat(Y9, "result 9") +
+      '<div style="flex-basis:100%;height:0"></div>' +
+      mat(X3, "3s table", { tern: true }) + op("·") + mat(W, "weights", { tern: true }) + op("=") + mat(Y3, "result 3") +
+      '<div style="flex-basis:100%;height:0"></div>' +
+      mat(X1, "1s table", { tern: true }) + op("·") + mat(W, "weights", { tern: true }) + op("=") + mat(Y1, "result 1");
+    const Y = Y9.map((r, i) => r.map((v2, j) => 9 * v2 + 3 * Y3[i][j] + Y1[i][j]));
+    const direct = mm(X, W);
+    $("combine").innerHTML = op("9 ×") + mat(Y9, "result 9") + op("+ 3 ×") + mat(Y3, "result 3") + op("+") + mat(Y1, "result 1") + op("=") + mat(Y, "combined");
+    const same = JSON.stringify(Y) === JSON.stringify(direct);
+    $("checkline").textContent = same ? "✓ Same as data · weights done directly: " + JSON.stringify(direct).replace(/-/g, "−") : "Mismatch";
+    document.querySelectorAll("#split td.pick").forEach(td => {
+      const go = () => { sel = [+td.dataset.i, +td.dataset.j]; renderMatrix(); };
+      td.addEventListener("click", go);
+      td.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); go(); } });
+    });
+  }
+  $("newex").addEventListener("click", () => {
+    X = X.map(r => r.map(() => Math.floor(Math.random() * 27) - 13));
+    sel = [0, 0];
+    renderMatrix();
+  });
+
+  const setN = (v) => { n = Math.max(-40, Math.min(40, v)); renderCoins(); };
+  $("dec").addEventListener("click", () => setN(n - 1));
+  $("inc").addEventListener("click", () => setN(n + 1));
+  $("slider").addEventListener("input", (e) => setN(+e.target.value));
+  ["t2", "t3", "t4"].forEach(id => $(id).addEventListener("click", () => {
+    k = +id.slice(1);
+    try { localStorage.setItem("ct-k", String(k)); } catch (e) {}
+    renderCoins();
+  }));
+  // ---------- bit-packed ternary dot product ----------
+  const L = 16;
+  let ra = [1, 0, -1, 1, 1, -1, 0, 0, 1, -1, 1, 0, -1, 1, 0, 1];
+  let rb = [1, 1, -1, -1, 0, -1, 1, 0, 1, 1, -1, 0, 1, 1, -1, 0];
+  const bitCell = (b, kind) => '<td class="' + (b ? kind : "z") + '">' + b + "</td>";
+  const head = '<tr><th></th>' + Array.from({ length: L }, (_, i) => "<th>" + (i + 1) + "</th>").join("") + '<th style="text-align:left">as a number</th></tr>';
+  const asNum = (bits) => "0b" + bits.join("") + " = " + parseInt(bits.join(""), 2);
+  function renderBits() {
+    const pa = ra.map(v => v === 1 ? 1 : 0), ma = ra.map(v => v === -1 ? 1 : 0);
+    const pb = rb.map(v => v === 1 ? 1 : 0), mb = rb.map(v => v === -1 ? 1 : 0);
+    const rowT = (name, r, key) => "<tr><th>" + name + "</th>" + r.map((v, i) => '<td class="pick ' + cls(v) + '" tabindex="0" data-r="' + key + '" data-i="' + i + '">' + sgn(v) + "</td>").join("") + "<td></td></tr>";
+    $("bt-rows").innerHTML = head + rowT("row A", ra, "a") + rowT("row B", rb, "b");
+    const rowB = (name, bits, kind) => "<tr><th>" + name + "</th>" + bits.map(b => bitCell(b, kind)).join("") + '<td class="mono" style="text-align:left">' + asNum(bits) + "</td></tr>";
+    $("bt-bits").innerHTML = head + rowB("A plus", pa, "p") + rowB("A minus", ma, "m") + rowB("B plus", pb, "p") + rowB("B minus", mb, "m");
+    const and = (x, y) => x.map((v, i) => v & y[i]);
+    const pp = and(pa, pb), mm = and(ma, mb), pm = and(pa, mb), mp = and(ma, pb);
+    const cnt = (x) => x.reduce((s, v) => s + v, 0);
+    const rowAnd = (name, bits, kind, sign) => "<tr><th>" + name + "</th>" + bits.map(b => bitCell(b, kind)).join("") + '<td style="text-align:left">count = <b>' + cnt(bits) + "</b> " + sign + "</td></tr>";
+    $("bt-and").innerHTML = head +
+      rowAnd("A plus AND B plus", pp, "p", "(+1 × +1, adds)") +
+      rowAnd("A minus AND B minus", mm, "p", "(−1 × −1, adds)") +
+      rowAnd("A plus AND B minus", pm, "m", "(+1 × −1, subtracts)") +
+      rowAnd("A minus AND B plus", mp, "m", "(−1 × +1, subtracts)");
+    const bitAns = cnt(pp) + cnt(mm) - cnt(pm) - cnt(mp);
+    const direct = ra.reduce((s, v, i) => s + v * rb[i], 0);
+    $("bt-eq").innerHTML = 'dot(A, B) = (<span class="p">' + cnt(pp) + '</span> + <span class="p">' + cnt(mm) + '</span>) − (<span class="m">' + cnt(pm) + '</span> + <span class="m">' + cnt(mp) + "</span>) = <b>" + String(bitAns).replace("-", "−") + "</b>";
+    $("bt-check").textContent = bitAns === direct ? "✓ Same as multiplying the 16 pairs and adding them up: " + String(direct).replace("-", "−") : "Mismatch";
+    $("bt-ops").textContent = "Normal way: 16 multiplies and 15 adds. Bit way: 4 ANDs, 4 counts and 3 adds, and the same 11 operations would also cover 64 positions.";
+    document.querySelectorAll("#bt-rows td.pick").forEach(td => {
+      const go = () => { const r = td.dataset.r === "a" ? ra : rb; const i = +td.dataset.i; r[i] = r[i] === 1 ? -1 : r[i] + 1; renderBits(); };
+      td.addEventListener("click", go);
+      td.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); go(); } });
+    });
+  }
+  $("bt-new").addEventListener("click", () => {
+    ra = ra.map(() => Math.floor(Math.random() * 3) - 1);
+    rb = rb.map(() => Math.floor(Math.random() * 3) - 1);
+    renderBits();
+  });
+
+  renderCoins();
+  renderMatrix();
+  renderBits();
+})();
+</script>

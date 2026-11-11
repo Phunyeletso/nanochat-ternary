@@ -1,0 +1,73 @@
+n_out,n_in,bits,N,method,time_us
+256,256,4,1,numpy float32 matmul (BLAS),4.1
+256,256,4,1,torch float32 matmul,7.25
+256,256,4,1,naive int multiply-add (Numba),156.2
+256,256,4,1,grouped by value (Numba),156.08
+256,256,4,16,numpy float32 matmul (BLAS),48.4
+256,256,4,16,torch float32 matmul,29.11
+256,256,4,16,naive int multiply-add (Numba),234.77
+256,256,4,16,grouped by value (Numba),270.06
+256,256,4,256,numpy float32 matmul (BLAS),304.51
+256,256,4,256,torch float32 matmul,261.58
+256,256,4,256,naive int multiply-add (Numba),1669.18
+256,256,4,256,grouped by value (Numba),1342.67
+256,256,8,1,numpy float32 matmul (BLAS),5.68
+256,256,8,1,torch float32 matmul,5.4
+256,256,8,1,naive int multiply-add (Numba),156.16
+256,256,8,1,grouped by value (Numba),516.1
+256,256,8,16,numpy float32 matmul (BLAS),45.93
+256,256,8,16,torch float32 matmul,28.3
+256,256,8,16,naive int multiply-add (Numba),276.63
+256,256,8,16,grouped by value (Numba),685.15
+256,256,8,256,numpy float32 matmul (BLAS),304.81
+256,256,8,256,torch float32 matmul,288.46
+256,256,8,256,naive int multiply-add (Numba),2081.38
+256,256,8,256,grouped by value (Numba),3123.15
+1024,256,4,1,numpy float32 matmul (BLAS),16.03
+1024,256,4,1,torch float32 matmul,24.7
+1024,256,4,1,naive int multiply-add (Numba),526.9
+1024,256,4,1,grouped by value (Numba),716.2
+1024,256,4,16,numpy float32 matmul (BLAS),198.74
+1024,256,4,16,torch float32 matmul,122.27
+1024,256,4,16,naive int multiply-add (Numba),1212.53
+1024,256,4,16,grouped by value (Numba),1119.44
+1024,256,4,256,numpy float32 matmul (BLAS),1247.45
+1024,256,4,256,torch float32 matmul,1060.01
+1024,256,4,256,naive int multiply-add (Numba),5701.94
+1024,256,4,256,grouped by value (Numba),5565.39
+1024,256,8,1,numpy float32 matmul (BLAS),16.27
+1024,256,8,1,torch float32 matmul,29.13
+1024,256,8,1,naive int multiply-add (Numba),574.95
+1024,256,8,1,grouped by value (Numba),2108.11
+1024,256,8,16,numpy float32 matmul (BLAS),185.16
+1024,256,8,16,torch float32 matmul,107.57
+1024,256,8,16,naive int multiply-add (Numba),1309.8
+1024,256,8,16,grouped by value (Numba),2732.94
+1024,256,8,256,numpy float32 matmul (BLAS),1439.89
+1024,256,8,256,torch float32 matmul,1031.1
+1024,256,8,256,naive int multiply-add (Numba),6661.36
+1024,256,8,256,grouped by value (Numba),9278.97
+256,1024,4,1,numpy float32 matmul (BLAS),17.76
+256,1024,4,1,torch float32 matmul,21.52
+256,1024,4,1,naive int multiply-add (Numba),473.47
+256,1024,4,1,grouped by value (Numba),460.09
+256,1024,4,16,numpy float32 matmul (BLAS),205.1
+256,1024,4,16,torch float32 matmul,123.63
+256,1024,4,16,naive int multiply-add (Numba),963.78
+256,1024,4,16,grouped by value (Numba),784.25
+256,1024,4,256,numpy float32 matmul (BLAS),1427.12
+256,1024,4,256,torch float32 matmul,804.02
+256,1024,4,256,naive int multiply-add (Numba),6127.27
+256,1024,4,256,grouped by value (Numba),4463.24
+256,1024,8,1,numpy float32 matmul (BLAS),13.55
+256,1024,8,1,torch float32 matmul,23.15
+256,1024,8,1,naive int multiply-add (Numba),573.09
+256,1024,8,1,grouped by value (Numba),1111.86
+256,1024,8,16,numpy float32 matmul (BLAS),203.59
+256,1024,8,16,torch float32 matmul,129.61
+256,1024,8,16,naive int multiply-add (Numba),1108.6
+256,1024,8,16,grouped by value (Numba),1801.81
+256,1024,8,256,numpy float32 matmul (BLAS),1555.11
+256,1024,8,256,torch float32 matmul,1267.14
+256,1024,8,256,naive int multiply-add (Numba),8551.27
+256,1024,8,256,grouped by value (Numba),8839.18

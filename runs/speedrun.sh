@@ -2,6 +2,8 @@
 
 # This script is configured to train your own GPT-2 grade LLM (pretraining + finetuning)
 # It is designed to run on a blank 8XH100 GPU node and takes approximately 1.5 hours to complete.
+# STUDY NOTE (added): this is the whole pipeline end to end:
+#   data download -> tokenizer -> pretraining (base_train) -> eval -> SFT (chat fine-tuning) -> eval -> chat.
 
 # 1) Example launch (simplest):
 # bash runs/speedrun.sh
@@ -11,8 +13,11 @@
 # WANDB_RUN=speedrun screen -L -Logfile runs/speedrun.log -S speedrun bash runs/speedrun.sh
 
 # Default intermediate artifacts directory is in ~/.cache/nanochat
+# Use one CPU thread per process (avoids 8 processes fighting over CPU cores)
 export OMP_NUM_THREADS=1
+# Where data, tokenizer and checkpoints are stored
 export NANOCHAT_BASE_DIR="$HOME/.cache/nanochat"
+# Create that folder
 mkdir -p $NANOCHAT_BASE_DIR
 
 # -----------------------------------------------------------------------------
@@ -34,9 +39,11 @@ source .venv/bin/activate
 #    `wandb login`
 # 2) Set the WANDB_RUN environment variable when running this script, e.g.:
 #    `WANDB_RUN=d26 bash speedrun.sh`
+# If no run name was given...
 if [ -z "$WANDB_RUN" ]; then
     # by default use "dummy" : it's handled as a special case, skips logging to wandb
     WANDB_RUN=dummy
+# End if
 fi
 
 # -----------------------------------------------------------------------------
@@ -47,11 +54,14 @@ fi
 # so we download 2e9 / 250e6 = 8 data shards at this point
 # each shard is ~100MB of text (compressed), so this is about ~800MB of data on disk
 # look at dev/repackage_data_reference.py for details on how this data was prepared
+# Download 8 shards (enough to train the tokenizer)
 python -m nanochat.dataset -n 8
 # Immediately also kick off downloading more shards in the background while tokenizer trains
 # Approximately 150 shards are needed for GPT-2 capability pretraining, add 20 for padding.
 # The maximum total number of shards available in the entire dataset is 6542.
+# Download 170 shards in the background (the trailing & runs it in parallel)
 python -m nanochat.dataset -n 170 &
+# Remember the background job's process id
 DATASET_DOWNLOAD_PID=$!
 # train the tokenizer with vocab size 2**15 = 32768 on ~2B characters of data
 python -m scripts.tok_train
@@ -60,10 +70,13 @@ python -m scripts.tok_eval
 
 # -----------------------------------------------------------------------------
 # Base model (pretraining)
+# Tell the user we're waiting
 echo "Waiting for dataset download to complete..."
+# Block until the background download finishes
 wait $DATASET_DOWNLOAD_PID
 
 # d24 model (slightly undertrained to beat GPT-2 => decrease data:params ratio from compute optimal 10.5 (default) to 8)
+# PRETRAINING on 8 GPUs: depth 24 (width 1536, ~730M matmul params; embedding lookup tables add more), 8 tokens per param, FP8 matmuls. This is where ~all the compute goes.
 torchrun --standalone --nproc_per_node=8 -m scripts.base_train -- --depth=24 --target-param-data-ratio=8 --device-batch-size=16 --fp8 --run=$WANDB_RUN
 # evaluate the model: CORE metric, BPB on train/val, and draw samples
 torchrun --standalone --nproc_per_node=8 -m scripts.base_eval -- --device-batch-size=16
@@ -72,7 +85,9 @@ torchrun --standalone --nproc_per_node=8 -m scripts.base_eval -- --device-batch-
 # SFT (teach the model conversation special tokens, tool use, multiple choice)
 
 # run SFT and eval the model
+# Supervised fine-tuning on chat data (same forward/backward/step loop, much less data)
 torchrun --standalone --nproc_per_node=8 -m scripts.chat_sft -- --run=$WANDB_RUN
+# Evaluate the chat model on benchmarks
 torchrun --standalone --nproc_per_node=8 -m scripts.chat_eval -- -i sft
 
 # chat with the model over CLI! Leave out the -p to chat interactively

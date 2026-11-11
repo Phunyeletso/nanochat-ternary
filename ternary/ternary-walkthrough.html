@@ -1,0 +1,475 @@
+<title>Ternary Transformer Walkthrough</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans+Condensed:wght@500;600;700&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap">
+<style>
+/* Layout: one reading column; a mode switch + step rail on top, one step card at a time, then the cost chart. */
+:root {
+  --bg: #f6f7f8;
+  --surface: #ffffff;
+  --ink: #18202a;
+  --muted: #5b6573;
+  --line: #d9dee5;
+  --tern: #0f7a6c;        /* data x ternary: cheap with a ternary kernel */
+  --tern-soft: #dff2ee;
+  --dd: #b4531f;          /* data x data: no ternary saving */
+  --dd-soft: #f8e6db;
+  --look: #4b5bb5;        /* lookups / element-wise: no big multiply */
+  --look-soft: #e5e8f7;
+  --neg: #b4531f;
+  --pos: #0f7a6c;
+  --zero: #9aa3ae;
+  --font-display: "IBM Plex Sans Condensed", "Arial Narrow", system-ui, sans-serif;
+  --font-body: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #11161c; --surface: #19212a; --ink: #e6ebf0; --muted: #9aa6b3; --line: #2c3743;
+    --tern: #4cc7b4; --tern-soft: #143a35; --dd: #f0915c; --dd-soft: #47281a;
+    --look: #95a3f2; --look-soft: #232a4d; --neg: #f0915c; --pos: #4cc7b4; --zero: #6b7785;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #11161c; --surface: #19212a; --ink: #e6ebf0; --muted: #9aa6b3; --line: #2c3743;
+  --tern: #4cc7b4; --tern-soft: #143a35; --dd: #f0915c; --dd-soft: #47281a;
+  --look: #95a3f2; --look-soft: #232a4d; --neg: #f0915c; --pos: #4cc7b4; --zero: #6b7785;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  background: var(--bg); color: var(--ink); font-family: var(--font-body); font-size: 16px; line-height: 1.55;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 28px 64px;
+}
+.wrap { max-width: 860px; margin: 0 auto; display: flex; flex-direction: column; gap: 28px; }
+h1, h2, h3 { font-family: var(--font-display); text-wrap: balance; margin: 0; line-height: 1.15; }
+h1 { font-size: clamp(1.9rem, 4.5vw, 2.6rem); font-weight: 700; letter-spacing: -0.01em; }
+h2 { font-size: 1.55rem; font-weight: 600; }
+h3 { font-size: 1.15rem; font-weight: 600; }
+p { margin: 0; max-width: 68ch; }
+.lede { color: var(--muted); font-size: 1.05rem; }
+header { display: flex; flex-direction: column; gap: 10px; }
+.eyebrow { font-family: var(--font-mono); font-size: 0.75rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+
+.legend { display: flex; flex-wrap: wrap; gap: 8px 14px; }
+.chip { display: inline-flex; align-items: center; gap: 7px; font-size: 0.86rem; padding: 3px 10px 3px 8px; border-radius: 999px; font-weight: 500; white-space: nowrap; }
+.chip::before { content: ""; width: 9px; height: 9px; border-radius: 2px; background: currentColor; }
+.chip.tern { background: var(--tern-soft); color: var(--tern); }
+.chip.dd { background: var(--dd-soft); color: var(--dd); }
+.chip.look { background: var(--look-soft); color: var(--look); }
+
+/* pipeline */
+.pipe { display: flex; flex-wrap: wrap; gap: 6px; align-items: stretch; }
+.pipe button {
+  font: inherit; font-size: 0.82rem; border: 1px solid var(--line); background: var(--surface); color: var(--ink);
+  border-radius: 6px; padding: 6px 9px; cursor: pointer; display: flex; flex-direction: column; gap: 2px; text-align: left; min-width: 0;
+  border-left-width: 4px;
+}
+.pipe button .n { font-family: var(--font-mono); font-size: 0.7rem; color: var(--muted); }
+.pipe button.k-tern { border-left-color: var(--tern); }
+.pipe button.k-dd { border-left-color: var(--dd); }
+.pipe button.k-look { border-left-color: var(--look); }
+.pipe button.k-none { border-left-color: var(--line); }
+.pipe button[aria-current="step"] { outline: 2px solid var(--ink); outline-offset: 1px; }
+.pipe button:focus-visible, .ctrl button:focus-visible, .mode button:focus-visible { outline: 2px solid var(--tern); outline-offset: 2px; }
+.pipe .group { font-family: var(--font-mono); font-size: 0.7rem; color: var(--muted); align-self: center; padding: 0 2px; }
+
+.mode { display: inline-flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; background: var(--surface); width: fit-content; }
+.mode button { font: inherit; font-weight: 500; border: 0; background: transparent; color: var(--muted); padding: 8px 16px; cursor: pointer; }
+.mode button[aria-pressed="true"] { background: var(--ink); color: var(--bg); }
+
+/* step card */
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 22px; display: flex; flex-direction: column; gap: 16px; }
+.card-head { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 8px 16px; }
+.card-head .num { font-family: var(--font-mono); color: var(--muted); font-size: 0.85rem; }
+.formula { font-family: var(--font-mono); font-size: 0.95rem; background: var(--bg); border-radius: 6px; padding: 10px 12px; overflow-x: auto; white-space: nowrap; }
+.real { font-size: 0.9rem; color: var(--muted); border-top: 1px dashed var(--line); padding-top: 12px; }
+.real b { color: var(--ink); font-weight: 600; }
+.why { display: flex; flex-direction: column; gap: 8px; }
+.why p { max-width: 70ch; }
+
+.demo { display: flex; flex-wrap: wrap; gap: 14px 18px; align-items: flex-start; }
+.demo .op { font-family: var(--font-mono); font-size: 1.3rem; color: var(--muted); align-self: center; }
+.m { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.m .cap { font-family: var(--font-mono); font-size: 0.75rem; color: var(--muted); }
+.m .scroll { overflow-x: auto; max-width: 100%; }
+table.mat { border-collapse: separate; border-spacing: 2px; font-family: var(--font-mono); font-size: 0.78rem; font-variant-numeric: tabular-nums; }
+table.mat td, table.mat th { padding: 3px 6px; text-align: right; border-radius: 3px; }
+table.mat th { color: var(--muted); font-weight: 400; font-size: 0.72rem; }
+table.mat td { background: var(--bg); }
+table.mat td.t1 { background: var(--tern-soft); color: var(--pos); font-weight: 600; }
+table.mat td.tm1 { background: var(--dd-soft); color: var(--neg); font-weight: 600; }
+table.mat td.t0 { color: var(--zero); }
+table.mat td.hl { outline: 2px solid var(--ink); }
+table.mat td.mask { color: var(--zero); background: transparent; }
+
+.ctrl { display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+.ctrl button { font: inherit; font-weight: 500; border: 1px solid var(--line); background: var(--surface); color: var(--ink); border-radius: 8px; padding: 9px 16px; cursor: pointer; }
+.ctrl button.primary { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+.ctrl button:disabled { opacity: 0.4; cursor: default; }
+
+.qa { display: flex; flex-direction: column; gap: 6px; background: var(--bg); border-radius: 8px; padding: 12px 14px; }
+.qa .q { font-weight: 600; }
+
+section.block { display: flex; flex-direction: column; gap: 14px; }
+.bars { display: flex; flex-direction: column; gap: 18px; }
+.bar-row { display: flex; flex-direction: column; gap: 6px; }
+.bar-row .lbl { display: flex; justify-content: space-between; gap: 10px; font-size: 0.9rem; flex-wrap: wrap; }
+.bar-row .lbl span:last-child { font-family: var(--font-mono); color: var(--muted); font-size: 0.82rem; }
+.bar { display: flex; height: 30px; border-radius: 6px; overflow: hidden; background: var(--bg); }
+.bar div { height: 100%; display: flex; align-items: center; justify-content: center; font-family: var(--font-mono); font-size: 0.72rem; color: var(--surface); white-space: nowrap; overflow: hidden; }
+.seg-tern { background: var(--tern); }
+.seg-dd { background: var(--dd); }
+.seg-dw { background: var(--dd); background-image: repeating-linear-gradient(135deg, transparent 0 6px, rgba(255,255,255,0.22) 6px 12px); }
+table.costs { border-collapse: collapse; width: 100%; font-size: 0.88rem; }
+table.costs th, table.costs td { text-align: left; padding: 7px 8px; border-bottom: 1px solid var(--line); vertical-align: top; }
+table.costs td.num { text-align: right; font-family: var(--font-mono); font-variant-numeric: tabular-nums; white-space: nowrap; }
+table.costs th { font-weight: 600; font-size: 0.8rem; color: var(--muted); }
+.tablewrap { overflow-x: auto; }
+.ideas { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; }
+.idea { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; display: flex; flex-direction: column; gap: 6px; }
+.idea .tag { font-family: var(--font-mono); font-size: 0.72rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; }
+footer { color: var(--muted); font-size: 0.85rem; }
+@media (prefers-reduced-motion: no-preference) { .card { transition: opacity .15s ease; } }
+</style>
+
+<div class="wrap">
+  <header>
+    <span class="eyebrow">nanochat · ternary experiments · how one training step works</span>
+    <h1>Ternary Transformer Walkthrough</h1>
+    <p class="lede">Follow three tokens through the model, step by step. Every multiply is marked by kind, so you can see where ternary weights save work and where they cannot.</p>
+    <div class="legend" aria-label="Legend">
+      <span class="chip tern">data × ternary weights</span>
+      <span class="chip dd">data × data</span>
+      <span class="chip look">lookup or element-wise (no big multiply)</span>
+    </div>
+  </header>
+
+  <div style="display:flex;flex-direction:column;gap:12px">
+    <div class="mode" role="group" aria-label="What to show">
+      <button id="mode-train" aria-pressed="true">Training</button>
+      <button id="mode-infer" aria-pressed="false">Using the model</button>
+    </div>
+    <nav class="pipe" id="pipe" aria-label="Steps"></nav>
+  </div>
+
+  <article class="card" id="card" aria-live="polite"></article>
+
+  <div class="ctrl">
+    <button id="prev">← Previous</button>
+    <button id="next" class="primary">Next →</button>
+  </div>
+
+  <section class="block" id="costs">
+    <h2>Where the work goes</h2>
+    <p>Multiply-adds per token, per layer, in the model we actually trained (256 numbers per token, feed-forward 1,024, context 256 tokens, so each token looks back at about 128 others on average).</p>
+    <div class="bars" id="bars"></div>
+    <div class="tablewrap">
+      <table class="costs" id="costtable"></table>
+    </div>
+    <p class="real">Not counted above: the output layer (256 × 4,096 = 1,048,576 per token, once per model, not per layer). In our Phase 5 model and in BitNet it stays decimal; in Phase 6 it is ternary. In big models it is a small share.</p>
+  </section>
+
+  <section class="block">
+    <h2>Where a breakthrough could come from</h2>
+    <p>In training, about 31% of the work is the weight-gradient multiply (saved data × gradient). Ternary weights do not touch it. These are ideas to test, not results.</p>
+    <div class="ideas">
+      <div class="idea"><span class="tag">Idea 1 · untested</span><h3>Estimate the weight gradient from fewer tokens</h3><p>Your flip rule only needs to know which weights to flip, not the exact gradient. Computing it from, say, 1 in 8 tokens would cut that 31% roughly 8×, if flips stay good enough.</p></div>
+      <div class="idea"><span class="tag">Idea 2 · untested</span><h3>Low-bit saved data and gradients</h3><p>The saved data is already 8-bit in our layers. Making the gradient low-bit too turns the weight-gradient multiply into cheap integer work. Ternary data is the extreme version.</p></div>
+      <div class="idea"><span class="tag">Idea 3 · needs kernels</span><h3>Ternary kernels for the other 62%</h3><p>Forward and gradient-for-data are data × ternary. A kernel built for training would turn those into adds and subtracts. Today our code still uses float multiplies there.</p></div>
+    </div>
+  </section>
+
+  <footer>Toy numbers are computed live on this page. Simplifications in the toy: one attention head, no normalisation, no 8-bit rounding of the data. Position is added to x, as in classic GPT; nanochat rotates q and k instead.</footer>
+</div>
+
+<script>
+(function () {
+  // ---------- tiny linear algebra ----------
+  const T = (A) => A[0].map((_, j) => A.map(r => r[j]));
+  const mm = (A, B) => A.map(r => B[0].map((_, j) => r.reduce((s, v, k) => s + v * B[k][j], 0)));
+  const add = (A, B) => A.map((r, i) => r.map((v, j) => v + B[i][j]));
+  const sc = (A, s) => A.map(r => r.map(v => v * s));
+  const softmaxRows = (A) => A.map(r => { const fin = r.filter(Number.isFinite); const m = Math.max(...fin); const e = r.map(v => Number.isFinite(v) ? Math.exp(v - m) : 0); const z = e.reduce((a, b) => a + b, 0); return e.map(v => v / z); });
+
+  // ---------- toy model ----------
+  const vocab = ["the", "cat", "sat", "on", "mat"];
+  const ids = [0, 1, 2];          // input: "the cat sat"
+  const tgt = [1, 2, 3];          // next tokens: "cat sat on"
+  const E = [[1, 0, 1, -1], [0, 2, -1, 1], [2, -1, 0, 1], [-1, 1, 1, 0], [0, 1, 2, -2]];
+  const P = [[0, 0, 0, 1], [0, 0, 1, 0], [0, 1, 0, 0]];
+  const Wq = [[1, 0, -1, 0], [0, 1, 0, 1], [-1, 0, 1, 0], [0, 1, 0, -1]];
+  const Wk = [[0, 1, 0, -1], [1, 0, 0, 1], [0, -1, 1, 0], [1, 0, 1, 0]];
+  const Wv = [[1, 1, 0, 0], [0, 0, 1, -1], [1, 0, 0, 1], [0, -1, 1, 0]];
+  const Wo = [[1, 0, 0, -1], [0, 1, 1, 0], [-1, 0, 1, 0], [0, 0, -1, 1]];
+  const W1 = [[1, 0, -1, 1, 0, 0, 1, -1], [0, 1, 1, 0, -1, 1, 0, 0], [1, -1, 0, 0, 1, 0, -1, 1], [0, 1, 0, -1, 0, 1, 1, 0]];
+  const W2 = [[1, 0, -1, 0], [0, 1, 0, 1], [-1, 0, 1, 0], [0, -1, 0, 1], [1, 1, 0, 0], [0, 0, 1, -1], [1, 0, 0, 1], [0, 1, -1, 0]];
+  const Wout = [[1, 0, -1, 0, 1], [0, 1, 0, -1, 0], [1, 1, 0, 0, -1], [0, -1, 1, 1, 0]];
+  const s = { q: 0.5, k: 0.5, v: 0.5, o: 0.5, w1: 0.5, w2: 0.25, out: 0.5 };   // one scale per ternary matrix
+
+  const X0 = ids.map(i => E[i]);
+  const X = add(X0, P);
+  const Q = sc(mm(X, Wq), s.q), K = sc(mm(X, Wk), s.k), V = sc(mm(X, Wv), s.v);
+  const S = sc(mm(Q, T(K)), 1 / 2).map((r, i) => r.map((v, j) => j > i ? -Infinity : v));   // / sqrt(4), causal mask
+  const A = softmaxRows(S);
+  const M = mm(A, V);
+  const O = sc(mm(M, Wo), s.o);
+  const X1 = add(X, O);
+  const H = sc(mm(X1, W1), s.w1);
+  const Ar = H.map(r => r.map(v => v > 0 ? v * v : 0));
+  const F = sc(mm(Ar, W2), s.w2);
+  const X2 = add(X1, F);
+  const L = sc(mm(X2, Wout), s.out);
+  const Pr = softmaxRows(L);
+  const losses = tgt.map((t, i) => -Math.log(Pr[i][t]));
+  const loss = losses.reduce((a, b) => a + b, 0) / losses.length;
+  // backward (cross-entropy + softmax): dL = (p - onehot) / n
+  const dL = Pr.map((r, i) => r.map((v, j) => (v - (j === tgt[i] ? 1 : 0)) / 3));
+  const dX2 = sc(mm(dL, T(Wout)), s.out);           // gradient arriving at the layer output (residual passes it through)
+  const dF = dX2;                                    // gradient at the feed-forward output
+  const dAr = sc(mm(dF, T(W2)), s.w2);               // gradient for the data:    data x ternary
+  const G2 = sc(mm(T(Ar), dF), s.w2);                // gradient for the weights: data x data (saved data Ar)
+  // flip rule (top-k style for the toy): 3 movable entries with the largest |G| move one step toward -sign(G)
+  const cand = [];
+  G2.forEach((r, i) => r.forEach((g, j) => { const d = g > 0 ? -1 : (g < 0 ? 1 : 0); const w = W2[i][j]; if (d !== 0 && w + d >= -1 && w + d <= 1) cand.push({ i, j, g, d }); }));
+  cand.sort((a, b) => Math.abs(b.g) - Math.abs(a.g));
+  const flips = cand.slice(0, 3);
+  const W2new = W2.map(r => r.slice()); flips.forEach(f => { W2new[f.i][f.j] += f.d; });
+  const flipSet = new Set(flips.map(f => f.i + "," + f.j));
+
+  // ---------- rendering helpers ----------
+  const fmt = (v, d) => {
+    if (v === -Infinity) return "–";
+    const r = Math.abs(v) < 0.005 && d > 0 ? 0 : v;
+    return d === 0 ? String(Math.round(r)) : (Math.round(r * Math.pow(10, d)) / Math.pow(10, d)).toFixed(d);
+  };
+  function mat(Mx, opts) {
+    const o = Object.assign({ d: 2, tern: false, rows: null, cols: null, cap: "", hl: null, pct: false }, opts || {});
+    let h = '<div class="m"><span class="cap">' + o.cap + '</span><div class="scroll"><table class="mat">';
+    if (o.cols) h += "<tr><th></th>" + o.cols.map(c => "<th>" + c + "</th>").join("") + "</tr>";
+    Mx.forEach((r, i) => {
+      h += "<tr>" + (o.rows ? "<th>" + o.rows[i] + "</th>" : (o.cols ? "<th></th>" : ""));
+      r.forEach((v, j) => {
+        let cls = "";
+        if (o.tern) cls = v === 1 ? "t1" : (v === -1 ? "tm1" : "t0");
+        if (v === -Infinity) cls = "mask";
+        if (o.hl && o.hl.has(i + "," + j)) cls += " hl";
+        const txt = o.pct && v !== -Infinity ? Math.round(v * 100) + "%" : fmt(v, o.tern ? 0 : o.d);
+        h += '<td class="' + cls + '">' + (o.tern && v === 1 ? "+1" : txt) + "</td>";
+      });
+      h += "</tr>";
+    });
+    return h + "</table></div></div>";
+  }
+  const tokRows = ids.map(i => vocab[i]);
+  const op = (c) => '<span class="op">' + c + "</span>";
+  const KIND = { tern: ["tern", "data × ternary weights"], dd: ["dd", "data × data"], look: ["look", "lookup or element-wise"], none: ["none", ""] };
+
+  // ---------- steps ----------
+  const steps = [
+    { id: "tokens", mode: "both", kind: "look", short: "Tokens", group: "Input",
+      title: "Cut the text into tokens",
+      why: ["The tokenizer turns text into ID numbers from a fixed list. Our toy list has 5 tokens; the real model has 4,096.",
+            "During training we also know the real next token at every position. That is what the model is trying to predict."],
+      formula: '"the cat sat"  →  [0, 1, 2]        targets (next tokens): "cat sat on" → [1, 2, 3]',
+      demo: () => mat([ids], { d: 0, cols: tokRows, cap: "input token IDs" }) + mat([tgt], { d: 0, cols: tgt.map(t => vocab[t]), cap: "the correct next tokens" }),
+      real: "Real model: 256 tokens per text window, 32 windows per batch, so 8,192 tokens per training step." },
+
+    { id: "embed", mode: "both", kind: "look", short: "Embed + position", group: "Input",
+      title: "Look up each token's vector, add position",
+      why: ["The token table has one row per token. We fetch the row for each token: no multiplying, just a lookup.",
+            "Then we add a position vector so the model knows word order. That gives x: one row of numbers per token. Everything after this works on x."],
+      formula: "x = token_table[ids] + position",
+      demo: () => mat(X0, { d: 0, rows: tokRows, cap: "token_table rows (3 × 4)" }) + op("+") + mat(P, { d: 0, rows: ["pos 0", "pos 1", "pos 2"], cap: "position (3 × 4)" }) + op("=") + mat(X, { d: 0, rows: tokRows, cap: "x (3 × 4)" }),
+      real: "Real model: each row has <b>256</b> numbers. The token table is decimal in Phase 5 and BitNet, ternary in Phase 6. nanochat rotates q and k for position instead of adding a vector, but the idea is the same." },
+
+    { id: "qkv", mode: "both", kind: "tern", short: "q, k, v", group: "Attention",
+      title: "Make queries, keys and values",
+      why: ["Each token's x is multiplied by three weight matrices. q says what this token is looking for, k says what it contains, v is what it will pass on.",
+            "The weights are only −1, 0, +1, so each output number is just some inputs added and others subtracted, then multiplied by one scale for the whole matrix."],
+      formula: "q = x · WQ × 0.5      k = x · WK × 0.5      v = x · WV × 0.5",
+      demo: () => mat(X, { d: 0, rows: tokRows, cap: "x (3 × 4)" }) + op("·") + mat(Wq, { tern: true, cap: "WQ (4 × 4), ternary" }) + op("→") + mat(Q, { rows: tokRows, cap: "q (3 × 4)" }) + mat(K, { rows: tokRows, cap: "k" }) + mat(V, { rows: tokRows, cap: "v" }),
+      real: "Real model: x (8,192 × 256) · WQ (256 × 256). <b>3 × 65,536 = 196,608</b> multiply-adds per token for q, k and v together." },
+
+    { id: "scores", mode: "both", kind: "dd", short: "q · kᵀ", group: "Attention",
+      title: "Score every earlier token",
+      why: ["Each token's q is compared with the k of every token up to and including itself. A big number means “that token is relevant to me”.",
+            "Future tokens are blocked (–), so a token can't peek at the word it is supposed to predict. Softmax turns each row of scores into percentages that add up to 100%.",
+            "Both q and k are data, made fresh for this text, so this is data × data."],
+      formula: "scores = q · kᵀ / √4      then block the future, then softmax each row",
+      demo: () => mat(S, { rows: tokRows, cols: tokRows, cap: "scores (3 × 3)" }) + op("→") + mat(A, { pct: true, rows: tokRows, cols: tokRows, cap: "attention percentages" }),
+      real: "Real model: each token scores up to 256 earlier tokens in each of 4 heads of 64 numbers. About <b>32,768</b> multiply-adds per token on average." },
+
+    { id: "mix", mode: "both", kind: "dd", short: "scores · v", group: "Attention",
+      title: "Blend the values: this is the “result”",
+      why: ["Each token takes a weighted blend of the v rows, using its percentages. This is how information moves between tokens: “sat” now carries some of “cat”.",
+            "This blend is what the earlier table called “result”. Percentages and v are both data, so this is data × data again."],
+      formula: "result = percentages · v",
+      demo: () => mat(A, { pct: true, rows: tokRows, cols: tokRows, cap: "percentages (3 × 3)" }) + op("·") + mat(V, { rows: tokRows, cap: "v (3 × 4)" }) + op("=") + mat(M, { rows: tokRows, cap: "result (3 × 4)" }),
+      real: "Real model: about <b>32,768</b> multiply-adds per token. This part grows with text length, because every token looks at every earlier one." },
+
+    { id: "wo", mode: "both", kind: "tern", short: "· WO", group: "Attention",
+      title: "Mix it back with WO, add to x",
+      why: ["The real model runs 4 attention “heads” side by side, each 64 numbers wide, each following a different kind of relationship. Their results are placed next to each other into one row of 256 numbers.",
+            "WO is the attention output matrix. It mixes those heads' findings into one update for the token. Then the update is added onto x instead of replacing it (the “residual”), so nothing learned earlier is lost."],
+      formula: "x  ←  x + result · WO × 0.5",
+      demo: () => mat(M, { rows: tokRows, cap: "result (3 × 4)" }) + op("·") + mat(Wo, { tern: true, cap: "WO (4 × 4), ternary" }) + op("→") + mat(X1, { rows: tokRows, cap: "new x (3 × 4)" }),
+      qa: ["What is WO?", "A learned weight matrix, 256 × 256 in the real model, like WQ. It is ternary in BitNet and in your model."],
+      real: "Real model: <b>65,536</b> multiply-adds per token." },
+
+    { id: "up", mode: "both", kind: "tern", short: "· W1 (up)", group: "Feed-forward",
+      title: "Feed-forward up: W1 widens each token",
+      why: ["Attention let tokens talk. The feed-forward block lets each token “think” on its own, using what it just gathered. It is where much of the model's stored knowledge lives.",
+            "W1 expands each token from 4 numbers to 8 (256 to 1,024 in the real model), giving it room to detect many patterns. ReLU² then zeroes the negatives and squares the positives. That non-linearity is what makes stacking layers useful."],
+      formula: "h = x · W1 × 0.5      then  a = ReLU(h)²",
+      demo: () => mat(X1, { rows: tokRows, cap: "x (3 × 4)" }) + op("·") + mat(W1, { tern: true, cap: "W1 (4 × 8), ternary" }) + op("→") + mat(Ar, { rows: tokRows, cap: "a = ReLU(h)² (3 × 8)" }),
+      real: "Real model: x (… × 256) · W1 (256 × 1,024) = <b>262,144</b> multiply-adds per token. The ReLU² step is element-wise and cheap." },
+
+    { id: "down", mode: "both", kind: "tern", short: "· W2 (down)", group: "Feed-forward",
+      title: "Feed-forward down: W2 shrinks back, add to x",
+      why: ["W2 compresses the 8 numbers back to 4 (1,024 back to 256), keeping what matters. The result is added onto x again.",
+            "That completes one layer. The real model repeats the whole layer (attention + feed-forward) 4 times, each with its own WQ, WK, WV, WO, W1, W2."],
+      formula: "x  ←  x + a · W2 × 0.25",
+      demo: () => mat(Ar, { rows: tokRows, cap: "a (3 × 8)" }) + op("·") + mat(W2, { tern: true, cap: "W2 (8 × 4), ternary" }) + op("→") + mat(X2, { rows: tokRows, cap: "x after the layer (3 × 4)" }),
+      real: "Real model: <b>262,144</b> multiply-adds per token. Per layer, the six ternary matrices together: <b>786,432</b>." },
+
+    { id: "out", mode: "both", kind: "tern", short: "Output layer", group: "Output",
+      title: "Score every word in the vocabulary",
+      why: ["The output layer turns each token's final x into one score per vocabulary word. Softmax turns the scores into probabilities.",
+            "In this toy it is ternary. In our Phase 5 model and in BitNet it stays decimal, so there it is data × decimal weights; in Phase 6 it is ternary."],
+      formula: "probabilities = softmax( x · Wout × 0.5 )",
+      demo: () => mat(X2, { rows: tokRows, cap: "x (3 × 4)" }) + op("·") + mat(Wout, { tern: true, cap: "Wout (4 × 5)" }) + op("→") + mat(Pr, { pct: true, rows: tokRows.map(t => "after " + t), cols: vocab, cap: "next-token probabilities" }),
+      real: "Real model: 256 × 4,096 = <b>1,048,576</b> multiply-adds per token, once (not per layer)." },
+
+    { id: "generate", mode: "infer", kind: "none", short: "Pick + repeat", group: "Generate",
+      title: "Pick the next word, append it, repeat",
+      why: ["When using the model, we only need the last row: the probabilities after the last token. We pick a word (usually one of the likely ones), add it to the text and run everything again.",
+            "That is all inference is: the forward pass, over and over. No loss, no gradients, no saved data. That is why it is cheap with ternary weights: about 92% of each layer's multiply work is data × ternary."],
+      formula: "next = sample(probabilities after “sat”);   text = “the cat sat ” + next;   repeat",
+      demo: () => mat([Pr[2]], { pct: true, rows: ["after sat"], cols: vocab, cap: "pick one, e.g. the most likely" }),
+      real: "This is how the text samples were generated, 60 tokens at a time." },
+
+    { id: "loss", mode: "train", kind: "look", short: "Loss", group: "Training",
+      title: "Measure the surprise: the loss",
+      why: ["We know the correct next token at every position. The loss for one position is −log(probability given to the correct token): small if the model was confident and right, big if it was surprised.",
+            "The loss is ONE number: the average over all positions. Training tries to push it down. Our “bits per byte” score is the same surprise, measured per letter of text."],
+      formula: "loss = average of −log p(correct)  =  " + fmt(loss, 3),
+      demo: () => mat([tgt.map((t, i) => Pr[i][t])], { pct: true, cols: tgt.map(t => vocab[t]), cap: "probability given to the correct token" }) + op("→") + mat([losses], { d: 3, cols: tgt.map(t => vocab[t]), cap: "−log p" }),
+      real: "Real model: averaged over 8,192 positions per step." },
+
+    { id: "grad", mode: "train", kind: "look", short: "Gradient", group: "Backward",
+      title: "The gradient: one matrix per thing, same shape",
+      why: ["A gradient is not one number. For every number in the model (every weight, every value of x along the way) it says: if this number went up a little, would the loss go up or down, and how much?",
+            "So the gradient for a 3 × 5 matrix is itself a 3 × 5 matrix. Backpropagation starts at the end. For the output scores it has a famously simple form: probability minus 1 for the correct word, probability minus 0 for the rest (divided by the number of positions)."],
+      formula: "gradient of the scores  =  (probabilities − correct) / 3",
+      demo: () => mat(dL, { d: 3, rows: tokRows.map(t => "after " + t), cols: vocab, cap: "gradient of scores (3 × 5)" }),
+      qa: ["What does a negative number mean here?", "Raising that score would lower the loss, so training wants it higher: those are the correct words."],
+      real: "From here, the gradient is passed backwards through every step, in reverse order: output layer, then each layer from last to first." },
+
+    { id: "back", mode: "train", kind: "dd", short: "Back through W2", group: "Backward",
+      title: "Going back through one matrix takes TWO multiplies",
+      why: ["Take W2 from the feed-forward step. In the forward pass it did: output = a · W2. Going backwards, the gradient of that output (dY) arrives, and we need two things:",
+            "1) The gradient for the data a, so we can keep going backwards: dY · W2ᵀ. W2 is ternary, so this is data × ternary: cheap.",
+            "2) The gradient for the weights W2, so we know how to change them: aᵀ · dY. Here a is the “saved data”: the exact input W2 saw in the forward pass, kept in memory for this moment. Both are data, so this is data × data: no ternary saving. This is the multiply that costs about a third of all training work."],
+      formula: "for the data:   dY · W2ᵀ  (data × ternary)        for the weights:   aᵀ · dY  (data × data)",
+      demo: () => mat(dF, { d: 3, rows: tokRows, cap: "dY: gradient arriving (3 × 4)" }) + op("·") + mat(T(W2), { tern: true, cap: "W2ᵀ (4 × 8)" }) + op("→") + mat(dAr, { d: 3, rows: tokRows, cap: "gradient for a (3 × 8)" })
+          + '<div style="flex-basis:100%;height:0"></div>'
+          + mat(T(Ar), { d: 2, rows: ["a1","a2","a3","a4","a5","a6","a7","a8"], cols: tokRows, cap: "saved data aᵀ (8 × 3)" }) + op("·") + mat(dF, { d: 3, rows: tokRows, cap: "dY (3 × 4)" }) + op("→") + mat(G2, { d: 3, hl: flipSet, cap: "gradient for W2 (8 × 4)" }),
+      qa: ["Why is the saved data such a memory hog?", "Every matrix's input, for every token in the batch, has to be kept from the forward pass until this moment. That is what filled most of the RAM in our runs."],
+      real: "Real model: both multiplies cost the same as the forward multiply, <b>786,432</b> each per token per layer. Attention also has its own backward multiplies (all data × data)." },
+
+    { id: "update", mode: "train", kind: "none", short: "Update", group: "Update",
+      title: "Change the weights",
+      why: ["Now each weight has a gradient. The three models use it differently:",
+            "Normal (A): weight −= small step × gradient. Needs a decimal weight plus optimizer memory, about 8–16 bytes per weight.",
+            "BitNet (B): the same update, applied to a hidden decimal copy. The ternary weight is re-rounded from it on every pass.",
+            "Yours (C): a few weights flip one step against the gradient's sign (0 → +1, +1 → 0, …) and the gradient is thrown away. Nothing extra is stored: 1 byte per weight. Below, the 3 entries with the biggest gradient flip (outlined)."],
+      formula: "C:  pick weights with large |gradient|;   move each one step toward −sign(gradient);   discard the gradient",
+      demo: () => mat(W2, { tern: true, hl: flipSet, cap: "W2 before" }) + op("→") + mat(W2new, { tern: true, hl: flipSet, cap: "W2 after flips" }),
+      real: "Real model: about 0.1% of each matrix flips per step at the start, with the stochastic rule. Then the next batch arrives and the whole cycle repeats, 600 times in our runs." }
+  ];
+
+  // ---------- state + render ----------
+  let mode = "train";
+  let idx = 0;
+  try { const m = localStorage.getItem("tw-mode"); if (m === "infer" || m === "train") mode = m; } catch (e) {}
+  const visible = () => steps.filter(st => st.mode === "both" || st.mode === mode);
+
+  function renderPipe() {
+    const v = visible();
+    let last = "";
+    let h = "";
+    v.forEach((st, i) => {
+      if (st.group !== last) { h += '<span class="group">' + st.group + "</span>"; last = st.group; }
+      h += '<button class="k-' + KIND[st.kind][0] + '" data-i="' + i + '"' + (i === idx ? ' aria-current="step"' : "") + '><span class="n">' + String(i + 1).padStart(2, "0") + "</span>" + st.short + "</button>";
+    });
+    const pipe = document.getElementById("pipe");
+    pipe.innerHTML = h;
+    pipe.querySelectorAll("button").forEach(b => b.addEventListener("click", () => { idx = +b.dataset.i; render(); }));
+  }
+  function renderCard() {
+    const v = visible(); const st = v[idx];
+    const k = KIND[st.kind];
+    let h = '<div class="card-head"><h2>' + st.title + "</h2>" + (k[1] ? '<span class="chip ' + k[0] + '">' + k[1] + "</span>" : "") + "</div>";
+    h += '<div class="why">' + st.why.map(p => "<p>" + p + "</p>").join("") + "</div>";
+    h += '<div class="formula">' + st.formula + "</div>";
+    h += '<div class="demo">' + st.demo() + "</div>";
+    if (st.qa) h += '<div class="qa"><span class="q">' + st.qa[0] + "</span><span>" + st.qa[1] + "</span></div>";
+    h += '<p class="real">' + st.real + "</p>";
+    h += '<span class="num">Step ' + (idx + 1) + " of " + v.length + "</span>";
+    document.getElementById("card").innerHTML = h;
+    document.getElementById("prev").disabled = idx === 0;
+    document.getElementById("next").disabled = idx === v.length - 1;
+  }
+  function render() { renderPipe(); renderCard(); }
+
+  function setMode(m) {
+    const cur = visible()[idx].id;
+    mode = m;
+    try { localStorage.setItem("tw-mode", m); } catch (e) {}
+    document.getElementById("mode-train").setAttribute("aria-pressed", m === "train");
+    document.getElementById("mode-infer").setAttribute("aria-pressed", m === "infer");
+    const v = visible(); const j = v.findIndex(st => st.id === cur); idx = j >= 0 ? j : Math.min(idx, v.length - 1);
+    render();
+  }
+  document.getElementById("mode-train").addEventListener("click", () => setMode("train"));
+  document.getElementById("mode-infer").addEventListener("click", () => setMode("infer"));
+  document.getElementById("prev").addEventListener("click", () => { if (idx > 0) { idx--; render(); } });
+  document.getElementById("next").addEventListener("click", () => { if (idx < visible().length - 1) { idx++; render(); } });
+  document.addEventListener("keydown", (e) => { if (e.target.closest && e.target.closest("input,textarea")) return; if (e.key === "ArrowRight") document.getElementById("next").click(); if (e.key === "ArrowLeft") document.getElementById("prev").click(); });
+
+  // ---------- cost section (real model numbers) ----------
+  const d = 256, ff = 1024, avgCtx = 128;
+  const fwdW = 3 * d * d + d * d + d * ff + ff * d;      // 786,432
+  const fwdA = 2 * avgCtx * d;                            // 65,536
+  const rows = [
+    { name: "Forward: x × WQ, WK, WV, WO, W1, W2", kind: "tern", n: fwdW, when: "both" },
+    { name: "Forward: q · kᵀ and scores · v (attention)", kind: "dd", n: fwdA, when: "both" },
+    { name: "Backward: gradient for the data (gradient × Wᵀ)", kind: "tern", n: fwdW, when: "train" },
+    { name: "Backward: gradient for the weights (saved dataᵀ × gradient)", kind: "dw", n: fwdW, when: "train" },
+    { name: "Backward: attention", kind: "dd", n: 2 * fwdA, when: "train" }
+  ];
+  const nf = (n) => n.toLocaleString("en-US");
+  function barHTML(label, items) {
+    const tot = items.reduce((a, r) => a + r.n, 0);
+    const tern = items.filter(r => r.kind === "tern").reduce((a, r) => a + r.n, 0);
+    let h = '<div class="bar-row"><div class="lbl"><span><b>' + label + "</b> · " + Math.round(100 * tern / tot) + "% data × ternary</span><span>" + nf(tot) + " per token per layer</span></div><div class=\"bar\">";
+    items.forEach(r => { const pct = 100 * r.n / tot; const cls = r.kind === "tern" ? "seg-tern" : (r.kind === "dw" ? "seg-dw" : "seg-dd"); h += '<div class="' + cls + '" style="width:' + pct.toFixed(2) + '%" title="' + r.name + '">' + (pct > 9 ? Math.round(pct) + "%" : "") + "</div>"; });
+    return h + "</div></div>";
+  }
+  document.getElementById("bars").innerHTML =
+    barHTML("Using the model", rows.filter(r => r.when === "both")) +
+    barHTML("Training", rows);
+  let t = '<tr><th>Multiply</th><th>Kind</th><th>When</th><th style="text-align:right">Per token, per layer</th></tr>';
+  rows.forEach(r => {
+    const k = r.kind === "tern" ? '<span class="chip tern">data × ternary</span>' : '<span class="chip dd">data × data</span>';
+    t += "<tr><td>" + r.name + "</td><td>" + k + "</td><td>" + (r.when === "both" ? "always" : "training only") + '</td><td class="num">' + nf(r.n) + "</td></tr>";
+  });
+  document.getElementById("costtable").innerHTML = t;
+
+  setMode(mode);
+})();
+</script>

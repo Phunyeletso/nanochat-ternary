@@ -1,0 +1,268 @@
+<title>Worksheet Multiply in Bits</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans+Condensed:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+/* Layout: one reading column that follows the worksheet in order: the two layered tables, the tables as bits, one answer cell worked through, then the whole answer. */
+:root {
+  --bg: #f6f7f8; --surface: #ffffff; --ink: #18202a; --muted: #5b6573; --line: #d9dee5;
+  --plus: #0f7a6c; --plus-soft: #dff2ee;      /* +1 and "same signs: add" */
+  --minus: #b4531f; --minus-soft: #f8e6db;    /* -1 and "opposite signs: subtract" */
+  --zero: #9aa3ae;
+  --focus: #4b5bb5; --focus-soft: #e5e8f7;    /* the row and column being used */
+  --font-display: "IBM Plex Sans Condensed", "Arial Narrow", system-ui, sans-serif;
+  --font-body: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #11161c; --surface: #19212a; --ink: #e6ebf0; --muted: #9aa6b3; --line: #2c3743;
+    --plus: #4cc7b4; --plus-soft: #143a35; --minus: #f0915c; --minus-soft: #47281a; --zero: #6b7785;
+    --focus: #95a3f2; --focus-soft: #232a4d; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #11161c; --surface: #19212a; --ink: #e6ebf0; --muted: #9aa6b3; --line: #2c3743;
+  --plus: #4cc7b4; --plus-soft: #143a35; --minus: #f0915c; --minus-soft: #47281a; --zero: #6b7785;
+  --focus: #95a3f2; --focus-soft: #232a4d; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  background: var(--bg); color: var(--ink); font-family: var(--font-body); font-size: 16px; line-height: 1.55;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 28px 64px;
+}
+.wrap { max-width: 900px; margin: 0 auto; display: flex; flex-direction: column; gap: 34px; }
+h1, h2, h3 { font-family: var(--font-display); text-wrap: balance; margin: 0; line-height: 1.15; }
+h1 { font-size: clamp(1.9rem, 4.5vw, 2.6rem); font-weight: 700; }
+h2 { font-size: 1.45rem; font-weight: 600; }
+h3 { font-size: 1.05rem; font-weight: 600; }
+p { margin: 0; max-width: 70ch; }
+.lede { color: var(--muted); font-size: 1.05rem; }
+.eyebrow { font-family: var(--font-mono); font-size: 0.75rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+header, section { display: flex; flex-direction: column; gap: 12px; }
+.muted { color: var(--muted); }
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 18px; display: flex; flex-direction: column; gap: 16px; }
+.flow { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 12px; }
+.m { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.cap { font-family: var(--font-mono); font-size: 0.72rem; color: var(--muted); }
+.op { font-family: var(--font-mono); font-size: 1.15rem; color: var(--muted); }
+.scroll { overflow-x: auto; max-width: 100%; }
+table.mat { border-collapse: separate; border-spacing: 3px; font-family: var(--font-mono); font-size: 0.95rem; font-variant-numeric: tabular-nums; }
+table.mat td { width: 2.8em; height: 2.2em; text-align: center; border-radius: 5px; background: var(--bg); }
+table.mat td.p { background: var(--plus-soft); color: var(--plus); font-weight: 600; }
+table.mat td.n { background: var(--minus-soft); color: var(--minus); font-weight: 600; }
+table.mat td.z { color: var(--zero); }
+table.mat td.on { box-shadow: inset 0 0 0 2px var(--focus); }
+table.mat td.b1p { background: var(--plus); color: var(--surface); font-weight: 600; }
+table.mat td.b1n { background: var(--minus); color: var(--surface); font-weight: 600; }
+table.mat td.b0 { color: var(--zero); }
+.big { font-family: var(--font-display); font-weight: 700; font-size: 1.6rem; }
+.pairs { display: grid; grid-template-columns: repeat(auto-fit, minmax(380px, 1fr)); gap: 14px; }
+@media (max-width: 460px) { .pairs { grid-template-columns: 1fr; } }
+.pair { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 14px; display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+.pair-head { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+.weight { font-family: var(--font-mono); font-size: 0.85rem; background: var(--focus-soft); color: var(--focus); padding: 2px 8px; border-radius: 999px; }
+table.bits { border-collapse: separate; border-spacing: 3px; font-family: var(--font-mono); font-size: 0.85rem; font-variant-numeric: tabular-nums; }
+table.bits th { font-weight: 500; color: var(--muted); font-size: 0.78rem; text-align: left; padding-right: 6px; white-space: nowrap; }
+table.bits td { width: 2.4em; height: 1.9em; text-align: center; border-radius: 4px; background: var(--bg); }
+table.bits td.count { width: auto; background: transparent; text-align: left; padding-left: 8px; white-space: nowrap; }
+.sum { font-family: var(--font-mono); font-size: 0.95rem; background: var(--bg); border-radius: 6px; padding: 8px 10px; overflow-x: auto; white-space: nowrap; }
+.sum .p { color: var(--plus); font-weight: 600; } .sum .n { color: var(--minus); font-weight: 600; }
+.cellpick { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.cellpick button { font: inherit; font-weight: 500; border: 1px solid var(--line); background: var(--surface); color: var(--ink); border-radius: 8px; padding: 7px 12px; cursor: pointer; }
+.cellpick button[aria-pressed="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+.cellpick button:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+.check { font-weight: 600; color: var(--plus); }
+.legend { display: flex; flex-wrap: wrap; gap: 8px 14px; font-size: 0.86rem; }
+.chip { display: inline-flex; align-items: center; gap: 6px; padding: 2px 10px; border-radius: 999px; font-weight: 500; }
+.chip.p { background: var(--plus-soft); color: var(--plus); } .chip.n { background: var(--minus-soft); color: var(--minus); } .chip.f { background: var(--focus-soft); color: var(--focus); }
+table.costs { border-collapse: collapse; font-size: 0.9rem; }
+table.costs td, table.costs th { padding: 6px 10px; border-bottom: 1px solid var(--line); text-align: left; }
+table.costs td.num { font-family: var(--font-mono); text-align: right; }
+</style>
+
+<div class="wrap">
+  <header>
+    <span class="eyebrow">your worksheet · balanced ternary · AND and count</span>
+    <h1>Worksheet Multiply in Bits</h1>
+    <p class="lede">The same two tables you drew: A = [[2, 4], [1, 2]] and B = [[4, 1], [0, 3]], each stored as a threes layer and a ones layer. Here is how a computer could multiply them using only bits, AND and counting.</p>
+    <div class="legend"><span class="chip p">+1, or same signs (add)</span><span class="chip n">−1, or opposite signs (subtract)</span><span class="chip f">the row and column being used</span></div>
+  </header>
+
+  <section>
+    <h2>1. Your two tables, as layers</h2>
+    <p>Each table is a threes layer and a ones layer. Every cell is 3 × (threes digit) + 1 × (ones digit).</p>
+    <div class="panel">
+      <div class="flow" id="layersA"></div>
+      <div class="flow" id="layersB"></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>2. Each layer stored as two bit layers</h2>
+    <p>A computer can't hold −1, 0, +1 in one bit, so every ternary layer becomes two bit layers: a <b>plus</b> layer with a 1 wherever the digit is +1, and a <b>minus</b> layer with a 1 wherever it is −1. A 0 is simply 0 in both.</p>
+    <div class="panel">
+      <h3>Table A</h3>
+      <div class="flow" id="bitsA"></div>
+      <h3>Table B</h3>
+      <div class="flow" id="bitsB"></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>3. Work out one answer cell</h2>
+    <p>Every cell of A @ B is a row of A times a column of B. Pick which answer cell to work out.</p>
+    <div class="cellpick" role="group" aria-label="Answer cell">
+      <span class="muted">answer cell:</span>
+      <button data-r="0" data-c="0">top-left</button>
+      <button data-r="0" data-c="1">top-right</button>
+      <button data-r="1" data-c="0">bottom-left</button>
+      <button data-r="1" data-c="1">bottom-right</button>
+    </div>
+    <p id="rc-text"></p>
+    <p>Because both tables have two layers, there are four layer pairs, exactly like long multiplication: threes × threes is worth 9, the two mixed pairs are worth 3 each, ones × ones is worth 1. Each pair is done with four ANDs and four counts.</p>
+    <div class="pairs" id="pairs"></div>
+  </section>
+
+  <section>
+    <h2>4. Add the four pairs with their worths</h2>
+    <div class="panel">
+      <div class="sum big" id="total"></div>
+      <p id="check" class="check"></p>
+    </div>
+  </section>
+
+  <section>
+    <h2>5. The whole answer</h2>
+    <p>Doing the same for all four cells gives your answer from the worksheet.</p>
+    <div class="panel">
+      <div class="flow" id="whole"></div>
+      <p class="muted">To store this answer as layers again it needs four layers (27s, 9s, 3s, 1s), because 14 is bigger than two layers can hold (−4 to 4):</p>
+      <div class="flow" id="outlayers"></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>What it cost</h2>
+    <div class="panel">
+      <div class="scroll"><table class="costs" id="costs"></table></div>
+      <p>Each AND and count handles up to 64 positions at once on a normal computer word, so for real model sizes (rows of 256 or more numbers) the bit way does far more work per step than this tiny 2 × 2 example shows. Whether that beats a GPU's built-in 8-bit multiply is still untested.</p>
+    </div>
+  </section>
+</div>
+
+<script>
+(function () {
+  const A3 = [[1, 1], [0, 1]], A1 = [[-1, 1], [1, -1]];
+  const B3 = [[1, 0], [0, 1]], B1 = [[1, 1], [0, 0]];
+  const comb = (T3, T1) => T3.map((r, i) => r.map((v, j) => 3 * v + T1[i][j]));
+  const A = comb(A3, A1), B = comb(B3, B1);
+  const mm = (X, Y) => X.map(r => Y[0].map((_, j) => r.reduce((s, v, k) => s + v * Y[k][j], 0)));
+  const AB = mm(A, B);
+  let cell = [0, 1];
+  try { const s = localStorage.getItem("wsb-cell"); if (s) { const p = JSON.parse(s); if (Array.isArray(p)) cell = p; } } catch (e) {}
+
+  const $ = (id) => document.getElementById(id);
+  const sg = (v) => v === 1 ? "+1" : (v === -1 ? "−1" : "0");
+  const neg = (v) => String(v).replace("-", "−");
+  const tcls = (v) => v === 1 ? "p" : (v === -1 ? "n" : "z");
+  function mat(M, cap, o) {
+    o = o || {};
+    let h = '<div class="m"><span class="cap">' + cap + '</span><div class="scroll"><table class="mat">';
+    M.forEach((r, i) => {
+      h += "<tr>" + r.map((v, j) => {
+        let c = o.tern ? tcls(v) : (o.bits ? (v ? (o.bits === "p" ? "b1p" : "b1n") : "b0") : "");
+        if (o.row !== undefined && i === o.row) c += " on";
+        if (o.col !== undefined && j === o.col) c += " on";
+        if (o.cell && o.cell[0] === i && o.cell[1] === j) c += " on";
+        return '<td class="' + c + '">' + (o.tern ? sg(v) : neg(v)) + "</td>";
+      }).join("") + "</tr>";
+    });
+    return h + "</table></div></div>";
+  }
+  const op = (c) => '<span class="op">' + c + "</span>";
+  const plus = (M) => M.map(r => r.map(v => v === 1 ? 1 : 0));
+  const minus = (M) => M.map(r => r.map(v => v === -1 ? 1 : 0));
+
+  function renderStatic() {
+    $("layersA").innerHTML = '<span class="big">A</span>' + op("=") + "3 ×" + mat(A3, "threes layer", { tern: true }) + op("+") + "1 ×" + mat(A1, "ones layer", { tern: true }) + op("=") + mat(A, "A");
+    $("layersB").innerHTML = '<span class="big">B</span>' + op("=") + "3 ×" + mat(B3, "threes layer", { tern: true }) + op("+") + "1 ×" + mat(B1, "ones layer", { tern: true }) + op("=") + mat(B, "B");
+    $("bitsA").innerHTML =
+      mat(A3, "A threes", { tern: true }) + op("→") + mat(plus(A3), "plus bits", { bits: "p" }) + mat(minus(A3), "minus bits", { bits: "n" }) +
+      '<span style="width:24px"></span>' +
+      mat(A1, "A ones", { tern: true }) + op("→") + mat(plus(A1), "plus bits", { bits: "p" }) + mat(minus(A1), "minus bits", { bits: "n" });
+    $("bitsB").innerHTML =
+      mat(B3, "B threes", { tern: true }) + op("→") + mat(plus(B3), "plus bits", { bits: "p" }) + mat(minus(B3), "minus bits", { bits: "n" }) +
+      '<span style="width:24px"></span>' +
+      mat(B1, "B ones", { tern: true }) + op("→") + mat(plus(B1), "plus bits", { bits: "p" }) + mat(minus(B1), "minus bits", { bits: "n" });
+  }
+
+  // one layer pair, one answer cell: row r of LA (A layer) with column c of LB (B layer)
+  function pairCalc(LA, LB, r, c) {
+    const a = LA[r], b = LB.map(row => row[c]);
+    const ap = a.map(v => v === 1 ? 1 : 0), an = a.map(v => v === -1 ? 1 : 0);
+    const bp = b.map(v => v === 1 ? 1 : 0), bn = b.map(v => v === -1 ? 1 : 0);
+    const and = (x, y) => x.map((v, i) => v & y[i]);
+    const cnt = (x) => x.reduce((s, v) => s + v, 0);
+    const pp = and(ap, bp), nn = and(an, bn), pn = and(ap, bn), np = and(an, bp);
+    return { a, b, ap, an, bp, bn, pp, nn, pn, np, c: { pp: cnt(pp), nn: cnt(nn), pn: cnt(pn), np: cnt(np) },
+             value: cnt(pp) + cnt(nn) - cnt(pn) - cnt(np) };
+  }
+  const PAIRS = [
+    { name: "A threes × B threes", LA: A3, LB: B3, w: 9 },
+    { name: "A threes × B ones", LA: A3, LB: B1, w: 3 },
+    { name: "A ones × B threes", LA: A1, LB: B3, w: 3 },
+    { name: "A ones × B ones", LA: A1, LB: B1, w: 1 }
+  ];
+  const rowLab = ["top", "bottom"], colLab = ["left", "right"];
+
+  function renderCell() {
+    const [r, c] = cell;
+    document.querySelectorAll(".cellpick button").forEach(b => b.setAttribute("aria-pressed", String(+b.dataset.r === r && +b.dataset.c === c)));
+    $("rc-text").innerHTML = "The " + rowLab[r] + "-" + colLab[c] + " answer cell uses <b>row " + (r + 1) + " of A</b> and <b>column " + (c + 1) + " of B</b> (outlined below in every layer).";
+    let h = "", parts = [];
+    PAIRS.forEach(P => {
+      const x = pairCalc(P.LA, P.LB, r, c);
+      const bitRow = (name, bits, kind) => "<tr><th>" + name + "</th>" + bits.map(v => '<td class="' + (v ? (kind === "p" ? "b1p" : "b1n") : "b0") + '">' + v + "</td>").join("") + "<td class=\"count\"></td></tr>";
+      const andRow = (name, bits, kind, n, note) => "<tr><th>" + name + "</th>" + bits.map(v => '<td class="' + (v ? (kind === "p" ? "b1p" : "b1n") : "b0") + '">' + v + "</td>").join("") + '<td class="count">count <b>' + n + "</b> " + note + "</td></tr>";
+      h += '<div class="pair"><div class="pair-head"><h3>' + P.name + '</h3><span class="weight">worth × ' + P.w + "</span></div>" +
+        '<div class="flow">' + mat(P.LA, "A layer", { tern: true, row: r }) + mat(P.LB, "B layer", { tern: true, col: c }) +
+        '<span class="muted">row ' + (r + 1) + " = [" + x.a.map(sg).join(", ") + "], column " + (c + 1) + " = [" + x.b.map(sg).join(", ") + "]</span></div>" +
+        '<div class="scroll"><table class="bits">' +
+        bitRow("A row, plus", x.ap, "p") + bitRow("A row, minus", x.an, "n") + bitRow("B column, plus", x.bp, "p") + bitRow("B column, minus", x.bn, "n") +
+        '<tr><td colspan="4" style="background:transparent;height:6px"></td></tr>' +
+        andRow("plus AND plus", x.pp, "p", x.c.pp, "add") + andRow("minus AND minus", x.nn, "p", x.c.nn, "add") +
+        andRow("plus AND minus", x.pn, "n", x.c.pn, "subtract") + andRow("minus AND plus", x.np, "n", x.c.np, "subtract") +
+        "</table></div>" +
+        '<div class="sum">(<span class="p">' + x.c.pp + '</span> + <span class="p">' + x.c.nn + '</span>) − (<span class="n">' + x.c.pn + '</span> + <span class="n">' + x.c.np + "</span>) = <b>" + neg(x.value) + "</b></div></div>";
+      parts.push({ w: P.w, v: x.value });
+    });
+    $("pairs").innerHTML = h;
+    const total = parts.reduce((s, p) => s + p.w * p.v, 0);
+    $("total").innerHTML = parts.map((p, i) => (i ? " + " : "") + p.w + " × (" + neg(p.v) + ")").join("") + " = " + neg(total);
+    $("check").textContent = total === AB[r][c] ? "✓ Same as the normal way: row " + (r + 1) + " of A · column " + (c + 1) + " of B = " + neg(AB[r][c]) : "Mismatch";
+    $("whole").innerHTML = mat(A, "A") + op("@") + mat(B, "B") + op("=") + mat(AB, "answer (selected cell outlined)", { cell: cell });
+    try { localStorage.setItem("wsb-cell", JSON.stringify(cell)); } catch (e) {}
+  }
+
+  function bt(n, k) { const d = []; let x = n; for (let i = 0; i < k; i++) { let rr = ((x % 3) + 3) % 3; if (rr === 2) rr = -1; d.push(rr); x = (x - rr) / 3; } return d; }
+  function renderOut() {
+    const L = [0, 1, 2, 3].map(i => AB.map(r => r.map(v => bt(v, 4)[i])));
+    $("outlayers").innerHTML = mat(L[3], "27s layer", { tern: true }) + mat(L[2], "9s layer", { tern: true }) + mat(L[1], "3s layer", { tern: true }) + mat(L[0], "1s layer", { tern: true });
+  }
+  function renderCosts() {
+    $("costs").innerHTML =
+      "<tr><th>Way</th><th>For one answer cell</th><th>For the whole 2 × 2 answer</th></tr>" +
+      '<tr><td>Normal whole numbers</td><td>2 multiplies, 1 add</td><td class="num">8 multiplies, 4 adds</td></tr>' +
+      '<tr><td>Layers + bits (this page)</td><td>4 pairs × (4 ANDs + 4 counts), then 4 weighted adds</td><td class="num">64 ANDs, 64 counts, combining</td></tr>';
+  }
+
+  document.querySelectorAll(".cellpick button").forEach(b => b.addEventListener("click", () => { cell = [+b.dataset.r, +b.dataset.c]; renderCell(); }));
+  renderStatic();
+  renderCell();
+  renderOut();
+  renderCosts();
+})();
+</script>

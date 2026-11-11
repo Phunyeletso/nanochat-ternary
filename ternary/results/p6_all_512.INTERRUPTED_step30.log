@@ -1,0 +1,37 @@
+2026-10-21 20:45:52,534 - nanochat.common - [32m[1mINFO[0m - Distributed world size: 1
+args: {"tag": "p6_all_512", "out_dir": "/home/claude/runs/p6", "depth": 4, "aspect_ratio": 128, "head_dim": 64, "max_seq_len": 256, "window_pattern": "L", "ternary_linear": 0, "ternary_embed": 0, "ternary_value_embeds": 0, "ternary_lm_head": 0, "ternary_gates": 0, "ternary_all": 1, "quant_act": 1, "flip_rule": "stochastic", "flip_frac": 0.001, "flip_lr": 0.001, "flip_schedule": "cosine", "flip_floor": 0.1, "counter_threshold": 8, "seed": 0, "bitnet": 0, "ternary_scale_lr": 0.002, "num_iterations": 600, "device_batch_size": 32, "total_batch_size": 8192, "embedding_lr": 0.3, "unembedding_lr": 0.008, "weight_decay": 0.28, "matrix_lr": 0.02, "scalar_lr": 0.5, "warmup_steps": 40, "warmdown_ratio": 0.65, "final_lr_frac": 0.05, "target_param_data_ratio": 12, "eval_every": 50, "eval_tokens": 131072, "compile": 0, "save": 1}
+ternary config: TernaryConfig(linear=True, embed=True, value_embeds=True, quant_act=True, lm_head=True, gates=True)
+storage: {"ternary_weights": 20971736, "float_params": 41, "ternary_MB_int8": 20.971736, "ternary_MB_packed_1p58bit": 4.14191786, "float_MB_fp32": 0.000164}
+remaining decimal parameters: 41 values in 35 tensors
+batch_lr_scale=0.1250 weight_decay_scaled=0.824993
+Step 00000 | Validation bpb: 3.154881
+step 00000/00600 | loss: 8.318017 | raw: 8.3180 | lrm: 0.03 | dt: 27526ms | tok/s: 297 | flipped: 0.000381 | zeros: 0.4493
+step 00001/00600 | loss: 8.316062 | raw: 8.3143 | lrm: 0.05 | dt: 7731ms | tok/s: 1,059 | flipped: 0.000702 | zeros: 0.4491
+step 00002/00600 | loss: 8.314212 | raw: 8.3110 | lrm: 0.07 | dt: 6285ms | tok/s: 1,303 | flipped: 0.000689 | zeros: 0.4489
+step 00003/00600 | loss: 8.312856 | raw: 8.3095 | lrm: 0.10 | dt: 7039ms | tok/s: 1,163 | flipped: 0.000699 | zeros: 0.4487
+step 00004/00600 | loss: 8.311009 | raw: 8.3053 | lrm: 0.12 | dt: 6678ms | tok/s: 1,226 | flipped: 0.000682 | zeros: 0.4485
+step 00005/00600 | loss: 8.307692 | raw: 8.2955 | lrm: 0.15 | dt: 6688ms | tok/s: 1,224 | flipped: 0.000683 | zeros: 0.4483
+step 00006/00600 | loss: 8.304233 | raw: 8.2896 | lrm: 0.17 | dt: 6822ms | tok/s: 1,200 | flipped: 0.000678 | zeros: 0.4481
+step 00007/00600 | loss: 8.300155 | raw: 8.2810 | lrm: 0.20 | dt: 6263ms | tok/s: 1,307 | flipped: 0.000667 | zeros: 0.4479
+step 00008/00600 | loss: 8.294016 | raw: 8.2625 | lrm: 0.23 | dt: 6398ms | tok/s: 1,280 | flipped: 0.000665 | zeros: 0.4477
+step 00009/00600 | loss: 8.286606 | raw: 8.2458 | lrm: 0.25 | dt: 6883ms | tok/s: 1,190 | flipped: 0.000663 | zeros: 0.4475
+step 00010/00600 | loss: 8.278298 | raw: 8.2296 | lrm: 0.28 | dt: 6244ms | tok/s: 1,311 | flipped: 0.000676 | zeros: 0.4473
+step 00011/00600 | loss: 8.266790 | raw: 8.1957 | lrm: 0.30 | dt: 6378ms | tok/s: 1,284 | flipped: 0.000668 | zeros: 0.4470
+step 00012/00600 | loss: 8.249029 | raw: 8.1343 | lrm: 0.33 | dt: 6753ms | tok/s: 1,213 | flipped: 0.000656 | zeros: 0.4468
+step 00013/00600 | loss: 8.229538 | raw: 8.0987 | lrm: 0.35 | dt: 6473ms | tok/s: 1,265 | flipped: 0.000663 | zeros: 0.4466
+step 00014/00600 | loss: 8.200026 | raw: 7.9952 | lrm: 0.38 | dt: 6565ms | tok/s: 1,247 | flipped: 0.000648 | zeros: 0.4464
+step 00015/00600 | loss: 8.162664 | raw: 7.8956 | lrm: 0.40 | dt: 6546ms | tok/s: 1,251 | flipped: 0.000674 | zeros: 0.4462
+step 00016/00600 | loss: 8.123535 | raw: 7.8366 | lrm: 0.42 | dt: 6953ms | tok/s: 1,178 | flipped: 0.000690 | zeros: 0.4460
+step 00017/00600 | loss: 8.079737 | raw: 7.7513 | lrm: 0.45 | dt: 6374ms | tok/s: 1,285 | flipped: 0.000729 | zeros: 0.4459
+step 00018/00600 | loss: 8.026580 | raw: 7.6200 | lrm: 0.47 | dt: 6556ms | tok/s: 1,249 | flipped: 0.000718 | zeros: 0.4457
+step 00019/00600 | loss: 7.968052 | raw: 7.5124 | lrm: 0.50 | dt: 6487ms | tok/s: 1,262 | flipped: 0.000722 | zeros: 0.4455
+step 00020/00600 | loss: 7.905335 | raw: 7.4095 | lrm: 0.53 | dt: 6589ms | tok/s: 1,243 | flipped: 0.000712 | zeros: 0.4454
+step 00021/00600 | loss: 7.844927 | raw: 7.3607 | lrm: 0.55 | dt: 6646ms | tok/s: 1,232 | flipped: 0.000704 | zeros: 0.4452
+step 00022/00600 | loss: 7.779072 | raw: 7.2447 | lrm: 0.57 | dt: 6343ms | tok/s: 1,291 | flipped: 0.000712 | zeros: 0.4450
+step 00023/00600 | loss: 7.706683 | raw: 7.1129 | lrm: 0.60 | dt: 6476ms | tok/s: 1,265 | flipped: 0.000708 | zeros: 0.4448
+step 00024/00600 | loss: 7.625636 | raw: 6.9544 | lrm: 0.62 | dt: 6400ms | tok/s: 1,280 | flipped: 0.000710 | zeros: 0.4447
+step 00025/00600 | loss: 7.554697 | raw: 6.9621 | lrm: 0.65 | dt: 6190ms | tok/s: 1,323 | flipped: 0.000717 | zeros: 0.4445
+step 00026/00600 | loss: 7.493617 | raw: 6.9794 | lrm: 0.68 | dt: 6921ms | tok/s: 1,183 | flipped: 0.000714 | zeros: 0.4443
+step 00027/00600 | loss: 7.424374 | raw: 6.8374 | lrm: 0.70 | dt: 6925ms | tok/s: 1,182 | flipped: 0.000725 | zeros: 0.4441
+step 00028/00600 | loss: 7.352446 | raw: 6.7390 | lrm: 0.72 | dt: 6069ms | tok/s: 1,349 | flipped: 0.000718 | zeros: 0.4440
+step 00029/00600 | loss: 7.290535 | raw: 6.7596 | lrm: 0.75 | dt: 6618ms | tok/s: 1,237 | flipped: 0.000719 | zeros: 0.4438

@@ -1,0 +1,48 @@
+model: p6_all_256
+--- prompt: 'It was a cold morning, and'
+It was a cold morning, and the day, "I do his fathering.
+The father to the LORD of the father's son in the thing, but one of the father of the little thing; and with the man came not in the land upon the house out of the py, in the flity of as the first
+--- prompt: 'And God said unto'
+And God said unto them after the LORD, "I said him was the law, and then the LORD, at all in that it, but to us of the cp, and all the earth.
+OI am a sons. "unfing the LORD, which was in the flity of as the morning
+--- prompt: 'Emma could not'
+Emma could not from the men, if she was, for what the law, I think the LORD, the earth in that it, but to us of the cp, and all the earth.
+OI am a sons. "I said the city was, which Fos to all his father, and
+
+model: p6_all_512
+--- prompt: 'It was a cold morning, and'
+It was a cold morning, and the day, "I never was no one was the law, then he had been my son, in that it, but one was a place of the little Croid of the midst, "rep. "You I very thing was you, and were well to pass want as the first
+--- prompt: 'And God said unto'
+And God said unto them, as they have been sty was.
+The father was a very Sat, at all in that it, but one was taken of those the little Croid of the LORD, "Cp. "You I shall be the pot, and so Mr. In as the first
+--- prompt: 'Emma could not'
+Emma could not the Cirmuch, By was was the law, the traabiny," said, 1:21 The LORD of the people, and said, with the LORD came not a sons of him, I shall be the py, and the children of his father, and
+
+model: p6_head_256
+--- prompt: 'It was a cold morning, and'
+It was a cold morning, and the day that was a very well, that was the ground to the LORD; was there were all in the 5:21 Yet a word of the LORD, saying, 5:22 That when they shall leave the house of the LORD, which over them with the wall of gold, and
+--- prompt: 'And God said unto'
+And God said unto them, that they were afraid of him that was made him to be not to go to be done in that it came in him, and of to said, MacIan; and with all, and all things be on him, and they were with thee, and all that are all going out to me
+--- prompt: 'Emma could not'
+Emma could not have done to be present, if ye not like the world to the termon, at all in the opportunity of the next day; but for an old when they were they came not at trunk in ye."
+"S cast into their head. You were come without being happy to me
+
+model: p6_tables_256
+--- prompt: 'It was a cold morning, and'
+It was a cold morning, and the place, that if she was standing him.
+The Lamble is the great many were all in that it came into one of the first of the little thing; and with the sea, "What are on him, I am the LORD, which was in the flars of her the first
+--- prompt: 'And God said unto'
+And God said unto them, This is, And if ye shall I have I believe I cannot be, my son, in that it, but one of the word of the little Croid with them, and not in life where him, I shall be the poted them, are not a morn,
+--- prompt: 'Emma could not'
+Emma could not have been done, if she was no further was the sow of the first was just at all in that it came into one of the first of the little thing; and with them, and her friend, where any of the pin was a bad philosite, after her to me
+
+model: p5_C_w512_cos10_s0
+--- prompt: 'It was a cold morning, and'
+It was a cold morning, and the day, that the time was the morning was the evening was the term washed overhe in the two young ladies were at the door; but for an old lady with the half-coft had been in the house, and was silent, and in the room without knowing as the morning
+--- prompt: 'And God said unto'
+And God said unto them after these words, "What ye do you mean to believe! Oh you, my dear," said the zeal of us. "You are you, you may give them you to you? I wish your soul."
+"Say was you, you do you are?"
+"Sto I me
+--- prompt: 'Emma could not'
+Emma could not have received a nodomin, for was the greatest to be in the greatness of am in the zeal of the house of the house, and all the world, was not very much better. * 2. After that it was a good deal more of her than any
+
