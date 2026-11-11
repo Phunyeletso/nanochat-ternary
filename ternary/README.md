@@ -1,6 +1,6 @@
 # Ternary-weight experiments
 
-Research by Phunyeletso, built on [Karpathy's nanochat](https://github.com/karpathy/nanochat). The upstream MIT license and history are retained. The root README distinguishes this work from the upstream project.
+Research by Phunyeletso, built on [Andrej Karpathy's nanochat](https://github.com/karpathy/nanochat). The upstream MIT licence and history are retained. The root README distinguishes this work from the upstream project.
 
 ## Question and method
 
@@ -8,13 +8,15 @@ Can the six large attention and MLP matrices in a small transformer be trained d
 
 `ternary/train.py` converts those matrices to ternary layers. During backpropagation, each layer captures a temporary weight gradient; a flip rule then moves selected weights one step in the direction suggested by the gradient, and discards the gradient. The tested `topk` and `stochastic` rules do not keep a hidden full-precision weight copy. Each ternary matrix has a learned scale.
 
-The optional `counter` rule is a distinct fallback: it accumulates signed gradient votes in an int8 counter per weight and flips when a threshold is reached. This adds per-weight state and breaks the strict no-hidden-copy goal. The headline results below use `stochastic`, not `counter`.
+The accumulator method under investigation adds signed gradient votes to a small per-weight counter (targeting 4- or 8-bit state); the ternary weight flips when the counter crosses a threshold. The current `counter` implementation in `ternary/flip.py` uses an int8 counter, so 4-bit counters are not implemented. This per-weight state is a deliberate memory/quality tradeoff, unlike the no-hidden-copy `topk` and `stochastic` rules.
 
 The comparisons include:
 
 - **A:** original nanochat full-precision training.
 - **B:** BitNet b1.58, with latent weights and a straight-through estimator (STE).
 - **C:** direct ternary weights trained by discrete flips.
+
+The planned comparison is a controlled 25-million-token run against BitNet. It is **in progress** and has not produced results yet. The numbers below are from earlier, smaller stand-in-data experiments; they are not results from that planned run and do not test the 25-million-token accumulator comparison.
 
 ## Results
 
@@ -58,6 +60,16 @@ Run the ternary unit tests with:
 ```bash
 uv run --group dev pytest ternary/tests
 ```
+
+## Files
+
+- `train.py`, `model.py`, `layers.py`, and `flip.py`: training entry point, model conversion, ternary operators, and weight-update rules.
+- `bitnet.py`: BitNet b1.58 comparison implementation.
+- `prep_standin_data.py`: creates nanochat-format shards from local text files.
+- `rowformula.py`, `rowformula_fast.py`, `valuegroup.py`, and the `phase4_*.py` scripts: integer-matmul experiments and benchmarks.
+- `tests/`: correctness and training tests for the experiment components.
+- `PHASE*_NOTES.md` and `VALUEGROUP_NOTES.md`: experiment design, results, and limitations.
+- `results/`: recorded logs, metrics, tables, samples, and plots from the earlier experiments.
 
 ## Scope and limitations
 

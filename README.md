@@ -1,25 +1,22 @@
-# Nanochat Ternary Research
-
-Independent ternary-weight experiments by Phunyeletso, built on [Karpathy's nanochat](https://github.com/karpathy/nanochat) and its MIT-licensed code. This repository is not the upstream nanochat project; the upstream history and license are retained, and the original project documentation follows below.
-
 ## Ternary research (my work)
 
-The experiments ask whether transformer block matrices can be trained directly as ternary weights (`-1`, `0`, `+1`) without keeping a hidden full-precision copy. Gradients drive discrete weight flips. An optional `counter` method accumulates signed gradient votes in an int8 counter for each weight before flipping; it is a fallback that uses extra per-weight state, not the method behind the results below. The experiments also compare this approach with the standard BitNet b1.58 latent-weight/straight-through-estimator baseline.
+Built on Andrej Karpathy's nanochat (MIT licence).
 
-Results so far use a small 4-layer, width-256 model trained for 600 steps on a public-domain Gutenberg stand-in dataset because the intended dataset was unavailable. Bits per byte (bpb) is lower-is-better; these small CPU experiments are research evidence, not a claim of production quality or measured speedup.
+**Problem:** explore training language models with less compute. **Idea:** use ternary weights (`-1`, `0`, `+1`) with a small per-weight accumulator behind each weight. Signed gradients add to a 4- or 8-bit counter; when it crosses a threshold, the ternary weight flips. The current `counter` implementation in `ternary/flip.py` uses an int8 counter. Other experiments use direct stochastic or top-k flips without that accumulator.
 
-| Model / setting | Validation bpb | Context |
-|---|---:|---|
-| Full precision | 1.2978 | Mean of 2 seeds |
-| BitNet b1.58 | 1.3663 | Mean of 2 seeds; latent weights + STE |
-| Direct ternary, stochastic flips | 1.4049 | Mean of 2 seeds; same width and training setup |
-| Direct ternary, width 512 | 1.371 | Mean of 2 seeds; roughly matches BitNet at width 256, but uses a wider model |
+**Comparison:** a controlled 25-million-token comparison against BitNet is planned. **Results: in progress** for that test; it has not been run yet. Existing smaller experiments on stand-in data are documented in [`ternary/README.md`](ternary/README.md), with their measured scope and limitations.
 
-For activation precision at width 256, 3 balanced-ternary tables (27 levels) matched the 8-bit result (1.403 vs. 1.403 bpb); 2 tables scored 1.416 and 1 table 1.519. These are one-seed results. See [the experiment notes and reproducibility details](ternary/README.md), including limitations and the full comparisons.
+### Upstream vs my changes
 
-## Upstream nanochat documentation
+- **My research additions:** `ternary/` contains the ternary and BitNet experiment code, tests, phase notes, plots, and recorded results. `ternary-experiments.bundle` is an experiment-history archive.
+- **My edits to upstream model/training files:** `nanochat/checkpoint_manager.py`, `nanochat/common.py`, `nanochat/dataloader.py`, `nanochat/dataset.py`, `nanochat/engine.py`, `nanochat/flash_attention.py`, `nanochat/fp8.py`, `nanochat/gpt.py`, `nanochat/loss_eval.py`, `nanochat/optim.py`, and `nanochat/tokenizer.py`.
+- **My edits to scripts:** `runs/speedrun.sh`; `scripts/base_train.py`, `scripts/chat_rl.py`, `scripts/chat_sft.py`, and `scripts/tok_train.py`.
+- **Task files:** no files under `tasks/` were changed for these experiments.
+- **Upstream:** the remaining nanochat project, its retained documentation below, MIT licence, and original Git history are Andrej Karpathy's work. The research changes are additions to that project, not a claim of authorship of upstream nanochat.
 
-The material below documents the upstream nanochat project and is retained for reference. It is not a description of the ternary experiments.
+---
+
+# nanochat
 
 ![nanochat logo](dev/nanochat.png)
 ![scaling laws](dev/scaling_laws_jan26.png)
